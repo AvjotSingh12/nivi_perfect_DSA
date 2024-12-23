@@ -125,7 +125,7 @@ app.get('/checkCompany', async (req, res) => {
     }
 
     try {
-        const companiesSnapshot = await db.collection('Test').get(); // Assuming the companies are stored in the 'Test' collection
+        const companiesSnapshot = await db.collection('Test').limit(100).get(); // Assuming the companies are stored in the 'Test' collection
         let matchingCompanies = [];
 
         companiesSnapshot.forEach(doc => {
