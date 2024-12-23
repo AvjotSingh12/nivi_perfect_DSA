@@ -117,6 +117,47 @@ app.get('/checkCompanyCat', async (req, res) => {
     }
 });
  
+// app.get('/checkCompany', async (req, res) => {
+//     const userInput = req.query.query; // Get the user input (company name prefix) from query parameters
+
+//     if (!userInput) {
+//         return res.status(400).json({ error: 'Company name prefix is required' });
+//     }
+
+//     try {
+//         const companiesSnapshot = await db.collection('Test').limit(100).get(); // Assuming the companies are stored in the 'Test' collection
+//         let matchingCompanies = [];
+
+//         companiesSnapshot.forEach(doc => {
+//             const companyList = doc.data().CompanyList; // Get the 'CompanyList' field
+
+//             if (companyList) {
+//                 // Remove quotes and split by commas
+//                 const companies = companyList
+//                     .replace(/"/g, '')        // Remove all double quotes
+//                     .split(',')               // Split by commas
+//                     .map(company => company.trim()); // Trim whitespace around each company name
+
+//                 // Filter the companies that start with the user input
+//                 companies.forEach(companyName => {
+//                     if (companyName.toLowerCase().startsWith(userInput.toLowerCase())) {
+//                         matchingCompanies.push({ company: companyName }); // Add the matching company name to the list
+//                     }
+//                 });
+//             }
+//         });
+
+//         // Respond with matching companies or a message if no match is found
+//         if (matchingCompanies.length > 0) {
+//             return res.json({ message: 'Companies found', companies: matchingCompanies });
+//         } else {
+//             return res.json({ message: 'No companies found for this prefix. Add a new company for this prefix.' });
+//         }
+//     } catch (error) {
+//         console.error('Error fetching data from Firestore:', error);
+//         return res.status(500).json({ error: 'Internal server error' });
+//     }
+// });
 app.get('/checkCompany', async (req, res) => {
     const userInput = req.query.query; // Get the user input (company name prefix) from query parameters
 
@@ -125,22 +166,26 @@ app.get('/checkCompany', async (req, res) => {
     }
 
     try {
-        const companiesSnapshot = await db.collection('Test').limit(100).get(); // Assuming the companies are stored in the 'Test' collection
+        const companiesSnapshot = await db.collection('Test')
+            .limit(100) // Limit the number of documents fetched to prevent unnecessary load
+            .get(); // Fetch data from Firestore
+
         let matchingCompanies = [];
+        const userInputLower = userInput.toLowerCase(); // Preprocess the user input to lowercase for efficient comparison
 
         companiesSnapshot.forEach(doc => {
             const companyList = doc.data().CompanyList; // Get the 'CompanyList' field
 
             if (companyList) {
-                // Remove quotes and split by commas
+                // Remove quotes, split by commas, and preprocess to lowercase
                 const companies = companyList
                     .replace(/"/g, '')        // Remove all double quotes
                     .split(',')               // Split by commas
-                    .map(company => company.trim()); // Trim whitespace around each company name
+                    .map(company => company.trim().toLowerCase()); // Convert to lowercase and trim whitespace
 
                 // Filter the companies that start with the user input
                 companies.forEach(companyName => {
-                    if (companyName.toLowerCase().startsWith(userInput.toLowerCase())) {
+                    if (companyName.startsWith(userInputLower)) {
                         matchingCompanies.push({ company: companyName }); // Add the matching company name to the list
                     }
                 });
@@ -158,6 +203,7 @@ app.get('/checkCompany', async (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 
 // Define the port
 const PORT = process.env.PORT || 5000;
