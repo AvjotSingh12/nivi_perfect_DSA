@@ -54,151 +54,172 @@ exports.uploadVehicleLoanCriteria = async (req, res) => {
   }
  };
  exports.uploadPersonalLoanCriteria = async (req, res) => {
-   const filePath = req.file?.path;
- 
-   if (!filePath) {
-     return res.status(400).json({ error: "No file uploaded." });
-   }
- 
-   try {
-     const records = [];
- 
-     // Parse the CSV file
-     fs.createReadStream(filePath)
-       .pipe(csv())
-       .on("data", (row) => {
-         records.push(row); // Collect records
-       })
-       .on("end", async () => {
-         try {
-           if (records.length === 0) {
-             throw new Error("CSV file is empty.");
-           }
- 
-           const errors = [];
-           const validRecords = [];
- 
-           for (const record of records) {
-             try {
-               const {
-                 bankName,
-                 minAge,
-                 maxAge,
-                 minMonthlyIncome,
-                 bachelorAccommodationRequired,
-                 minExperienceMonths,
-                 pfDeduction,
-               } = record;
- 
-               // Validate required fields
-               if (
-                 !bankName ||
-                 !minAge ||
-                 !maxAge ||
-                 !minMonthlyIncome ||
-                 bachelorAccommodationRequired === undefined ||
-                 !minExperienceMonths ||
-                 pfDeduction === undefined
-               ) {
-                 throw new Error("Missing required fields in record.");
-               }
- 
-               // Convert and validate numeric fields
-               const minAgeNum = parseInt(minAge, 10);
-               const maxAgeNum = parseInt(maxAge, 10);
-               const minMonthlyIncomeNum = parseInt(minMonthlyIncome, 10);
-               const minExperienceMonthsNum = parseInt(minExperienceMonths, 10);
- 
-               if (
-                 isNaN(minAgeNum) ||
-                 isNaN(maxAgeNum) ||
-                 isNaN(minMonthlyIncomeNum) ||
-                 isNaN(minExperienceMonthsNum)
-               ) {
-                 throw new Error("Invalid numeric values in record.");
-               }
- 
-               // Check age range
-               if (minAgeNum < 18 || maxAgeNum > 70 || minAgeNum > maxAgeNum) {
-                 throw new Error("Invalid age range.");
-               }
- 
-               // Convert bachelorAccommodationRequired to boolean
-               let bachelorRequired;
-               try {
-                 bachelorRequired = JSON.parse(bachelorAccommodationRequired.toLowerCase());
-                 if (typeof bachelorRequired !== "boolean") {
-                   throw new Error(`Invalid value for bachelorAccommodationRequired. Expected boolean, but got '${bachelorAccommodationRequired}'.`);
-                 }
-               } catch (err) {
-                 throw new Error(`Invalid value for bachelorAccommodationRequired. Expected 'true' or 'false', but got '${bachelorAccommodationRequired}'.`);
-               }
- 
-               // Convert pfDeduction to boolean
-               let pfDeductionValue;
-               try {
-                 pfDeductionValue = JSON.parse(pfDeduction.toLowerCase());
-                 if (typeof pfDeductionValue !== "boolean") {
-                   throw new Error(`Invalid value for pfDeduction. Expected boolean, but got '${pfDeduction}'.`);
-                 }
-               } catch (err) {
-                 throw new Error(`Invalid value for pfDeduction. Expected 'true' or 'false', but got '${pfDeduction}'.`);
-               }
- 
-               // Search for the bank by bankName
-               let bank = await Bank.findOne({ bankName }); // Use bankName here
- 
-               if (!bank) {
-                 // If the bank doesn't exist, create a new bank
-                 console.log(`Bank not found: ${bankName}. Creating new bank.`);
-                 bank = new Bank({ bankName }); // Create new bank
-                 await bank.save();
-               }
- 
-               // Prepare the record for insertion
-               validRecords.push({
-                 bank_id: bank._id,
-                 bankName: bankName,
-                 minAge: minAgeNum,
-                 maxAge: maxAgeNum,
-                 minMonthlyIncome: minMonthlyIncomeNum,
-                 bachelorAccommodationRequired: bachelorRequired,
-                 minExperienceMonths: minExperienceMonthsNum,
-                 pfDeduction: pfDeductionValue,
-               });
-             } catch (err) {
-               errors.push({ record, error: err.message });
-             }
-           }
- 
-           // Insert valid records into the database
-           if (validRecords.length > 0) {
-             await PersonalLoan.insertMany(validRecords);
-           }
- 
-           // Delete the uploaded file after processing
-           fs.unlinkSync(filePath);
- 
-           // Send response
-           res.status(201).json({
-             message: "Personal loan criteria uploaded successfully.",
-             recordsUploaded: validRecords.length,
-             errors,
-           });
-         } catch (err) {
-           console.error("Error saving records:", err);
-           res.status(500).json({ error: "Error saving records." });
-         }
-       })
-       .on("error", (err) => {
-         console.error("Error reading CSV file:", err);
-         res.status(500).json({ error: "Error reading CSV file." });
-       });
-   } catch (err) {
-     console.error("Error processing CSV file:", err);
-     res.status(500).json({ error: "Error processing CSV file." });
-   }
- };
+  const filePath = req.file?.path;
+
+  if (!filePath) {
+    return res.status(400).json({ error: "No file uploaded." });
+  }
+
+  try {
+    const records = [];
+
+    // Parse the CSV file
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on("data", (row) => {
+        records.push(row); // Collect records
+      })
+      .on("end", async () => {
+        try {
+          if (records.length === 0) {
+            throw new Error("CSV file is empty.");
+          }
+
+          const errors = [];
+          const validRecords = [];
+
+          for (const record of records) {
+            try {
+              const {
+                bankName,
+                minAge,
+                maxAge,
+                minMonthlyIncome,
+                bachelorAccommodationRequired,
+                minExperienceMonths,
+                pfDeduction,
+              } = record;
+
+              // Validate required fields
+              if (
+                !bankName ||
+                !minAge ||
+                !maxAge ||
+                !minMonthlyIncome ||
+                bachelorAccommodationRequired === undefined ||
+                !minExperienceMonths ||
+                pfDeduction === undefined
+              ) {
+                throw new Error("Missing required fields in record.");
+              }
+
+              // Convert and validate numeric fields
+              const minAgeNum = parseInt(minAge, 10);
+              const maxAgeNum = parseInt(maxAge, 10);
+              const minMonthlyIncomeNum = parseInt(minMonthlyIncome, 10);
+              const minExperienceMonthsNum = parseInt(minExperienceMonths, 10);
+
+              if (
+                isNaN(minAgeNum) ||
+                isNaN(maxAgeNum) ||
+                isNaN(minMonthlyIncomeNum) ||
+                isNaN(minExperienceMonthsNum)
+              ) {
+                throw new Error("Invalid numeric values in record.");
+              }
+
+              // Check age range
+              if (minAgeNum < 18 || maxAgeNum > 70 || minAgeNum > maxAgeNum) {
+                throw new Error("Invalid age range.");
+              }
+
+              // Convert bachelorAccommodationRequired to boolean
+              let bachelorRequired;
+              try {
+                bachelorRequired = JSON.parse(bachelorAccommodationRequired.toLowerCase());
+                if (typeof bachelorRequired !== "boolean") {
+                  throw new Error(`Invalid value for bachelorAccommodationRequired. Expected boolean, but got '${bachelorAccommodationRequired}'.`);
+                }
+              } catch (err) {
+                throw new Error(`Invalid value for bachelorAccommodationRequired. Expected 'true' or 'false', but got '${bachelorAccommodationRequired}'.`);
+              }
+
+              // Convert pfDeduction to boolean
+              let pfDeductionValue;
+              try {
+                pfDeductionValue = JSON.parse(pfDeduction.toLowerCase());
+                if (typeof pfDeductionValue !== "boolean") {
+                  throw new Error(`Invalid value for pfDeduction. Expected boolean, but got '${pfDeduction}'.`);
+                }
+              } catch (err) {
+                throw new Error(`Invalid value for pfDeduction. Expected 'true' or 'false', but got '${pfDeduction}'.`);
+              }
+
+              // Search for the bank by bankName
+              let bank = await Bank.findOne({ bankName });
+
+              if (!bank) {
+                // If the bank doesn't exist, create a new bank
+                console.log(`Bank not found: ${bankName}. Creating new bank.`);
+                bank = new Bank({ bankName }); // Create new bank
+                await bank.save();
+              }
+
+              // Check for duplicates in PersonalLoan collection
+              const existingRecord = await PersonalLoan.findOne({
+                bank_id: bank._id,
+                minAge: minAgeNum,
+                maxAge: maxAgeNum,
+                minMonthlyIncome: minMonthlyIncomeNum,
+                bachelorAccommodationRequired: bachelorRequired,
+                minExperienceMonths: minExperienceMonthsNum,
+                pfDeduction: pfDeductionValue,
+              });
+
+              if (existingRecord) {
+                console.log(`Duplicate record found: ${JSON.stringify(record)}`);
+                errors.push({
+                  record,
+                  error: "Duplicate record found in database.",
+                });
+                continue; // Skip to the next record
+              }
+
+              // Prepare the record for insertion
+              validRecords.push({
+                bank_id: bank._id,
+                bankName: bankName,
+                minAge: minAgeNum,
+                maxAge: maxAgeNum,
+                minMonthlyIncome: minMonthlyIncomeNum,
+                bachelorAccommodationRequired: bachelorRequired,
+                minExperienceMonths: minExperienceMonthsNum,
+                pfDeduction: pfDeductionValue,
+              });
+            } catch (err) {
+              errors.push({ record, error: err.message });
+            }
+          }
+
+          // Insert valid records into the database
+          if (validRecords.length > 0) {
+            await PersonalLoan.insertMany(validRecords);
+          }
+
+          // Delete the uploaded file after processing
+          fs.unlinkSync(filePath);
+
+          // Send response
+          res.status(201).json({
+            message: "Personal loan criteria uploaded successfully.",
+            recordsUploaded: validRecords.length,
+            errors,
+          });
+        } catch (err) {
+          console.error("Error saving records:", err);
+          res.status(500).json({ error: "Error saving records." });
+        }
+      })
+      .on("error", (err) => {
+        console.error("Error reading CSV file:", err);
+        res.status(500).json({ error: "Error reading CSV file." });
+      });
+  } catch (err) {
+    console.error("Error processing CSV file:", err);
+    res.status(500).json({ error: "Error processing CSV file." });
+  }
+};
+
 exports.uploadHomeLoanCriteria = async (req, res) => {
   const filePath = req.file.path;
 
