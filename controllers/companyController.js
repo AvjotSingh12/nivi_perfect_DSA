@@ -1,7 +1,112 @@
 const admin = require('firebase-admin');
 const {db} = require('../config/firebaseConfig');
 
+// companyCategoryController.js
+const CompanyCategory = require('../models/companyCategoryModel');
+const Bank = require('../models/bankModel');
+const fs = require('fs');
+const csv = require('csv-parser');
 
+const uploadCompanyCategories = async (req, res) => {
+  try {
+    const filePath = req.file.path;
+    const companyCategoriesData = [];
+
+    fs.createReadStream(filePath)
+      .pipe(csv({ headers: ['bank_name', 'categoryName', 'minimum_salary', 'companies'] })) // Explicitly set headers
+      .on("data", (row) => {
+        companyCategoriesData.push(row);
+      })
+      .on("end", async () => {
+        for (const entry of companyCategoriesData) {
+          const { bank_name, categoryName, minimum_salary, companies } = entry;
+
+          // Debug: Log CSV data to verify
+          console.log("Processing row:", entry);
+
+          if (!bank_name || !categoryName || !minimum_salary || !companies) {
+            console.error("Missing required data:", entry);
+            continue; // Skip rows with missing data
+          }
+
+          // Check if the bank exists
+          let bank = await Bank.findOne({ bankName: bank_name });  // Use bankName if that's the field in your schema
+          
+          // If the bank doesn't exist, create it
+          if (!bank) {
+            console.log(`Bank not found: ${bank_name}. Creating new bank.`);
+            bank = new Bank({ bankName: bank_name }); // Use bankName if that's the field in your schema
+            await bank.save();
+          }
+
+          // Ensure minimum_salary is a valid number
+          const salary = Number(minimum_salary);
+          if (isNaN(salary)) {
+            console.error(`Invalid minimum_salary for category ${categoryName} at ${bank_name}`);
+            continue; // Skip invalid salary rows
+          }
+
+          const companyArray = companies
+            ? companies.split(",").map((company) => company.trim())
+            : [];
+
+          // Find or create the company category for the bank
+          let companyCategory = await CompanyCategory.findOne({ bank_id: bank._id });
+
+          if (!companyCategory) {
+            companyCategory = new CompanyCategory({
+              bank_id: bank._id,
+              categories: [],
+            });
+          }
+
+          // Check if the category already exists for the bank
+          let existingCategory = companyCategory.categories.find(
+            (category) => category.categoryName === categoryName
+          );
+
+          if (existingCategory) {
+            // Update the existing category with the new companies and minimum salary
+            existingCategory.companies = [
+              ...new Set([
+                ...existingCategory.companies.map((c) => c.name),
+                ...companyArray,
+              ]),
+            ].map((name) => ({ name }));
+            existingCategory.minimumSalary = Math.min(
+              existingCategory.minimumSalary,
+              salary
+            );
+          } else {
+            // Add a new category if it doesn't exist
+            companyCategory.categories.push({
+              categoryName: categoryName,
+              minimumSalary: salary,
+              companies: companyArray.map((company) => ({ name: company })),
+            });
+          }
+
+          // Save the company category
+          await companyCategory.save();
+        }
+
+        // Clean up the uploaded file
+        fs.unlinkSync(filePath);
+
+        res.status(201).json({ message: "Company categories uploaded and saved successfully!" });
+      });
+  } catch (error) {
+    console.error("Error uploading company categories:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+module.exports = {
+  uploadCompanyCategories
+};
+
+  
 const checkCompanyCat  = async (req, res) => {
     const inputCompany = req.query.Company; // Get the company name from query parameters
 
@@ -102,5 +207,6 @@ const autoCompleteCompany = async (req, res)=>{
 
 module.exports = {
     checkCompanyCat,
-    autoCompleteCompany
+    autoCompleteCompany,
+    uploadCompanyCategories
 };

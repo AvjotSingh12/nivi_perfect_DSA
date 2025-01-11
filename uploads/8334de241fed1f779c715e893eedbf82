@@ -1,0 +1,5 @@
+﻿bank_name,category_name,minimum_salary,companies
+bank A,catA,50000,"Company1, Company2"
+bank B,catB,40000,"Company3, Company4"
+bank C,catA,30000,"Company5, Company6"
+bank A,catB,40000,"Company3, Company4"

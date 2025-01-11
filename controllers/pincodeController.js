@@ -1,6 +1,59 @@
-// instance from your config
 const admin = require('firebase-admin');
 const {db} = require('../config/firebaseConfig');
+
+
+const fs = require("fs");
+const csv = require("csv-parser");
+const Bank = require("../models/bankModel");
+const Pincode = require("../models/pincodeModel");
+
+const uploadPincodes = async (req, res) => {
+  try {
+    const filePath = req.file.path; // Path to the uploaded file
+
+    const pincodesData = [];
+
+    // Parse the CSV file
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on("data", (row) => {
+        pincodesData.push(row); // Collect all rows from the CSV
+      })
+      .on("end", async () => {
+        // Process each row
+        for (const entry of pincodesData) {
+          const { bank_name, pincodes } = entry;
+
+          // Find the bank by name
+          const bank = await Bank.findOne({ name: bank_name });
+
+          if (!bank) {
+            console.log(`Bank not found: ${bank_name}`);
+            continue; // Skip this row if the bank doesn't exist
+          }
+
+          // Convert pincodes from a comma-separated string to an array
+          const pincodeArray = pincodes.split(",").map((code) => code.trim());
+
+          // Create a pincode entry for the bank
+          await Pincode.create({
+            bank_id: bank._id,
+            serviceable_pincodes: pincodeArray,
+          });
+        }
+
+        // Delete the uploaded file after processing
+        fs.unlinkSync(filePath);
+
+        res.status(201).json({ message: "CSV data uploaded successfully!" });
+      });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
 const checkPincode= async (req, res) => {
     const userPincode = req.query.pincode; // Get the pincode from query parameters
 
@@ -42,5 +95,5 @@ const checkPincode= async (req, res) => {
 }
 
 module.exports = {
-    checkPincode,
+    checkPincode,uploadPincodes
 };

@@ -1,0 +1,5 @@
+bankName,minAge,maxAge,minMonthlyIncome,bachelorAccommodationRequired,minExperienceMonths,pinCode,pfDeduction
+Bank A,21,60,30000,true,12,123456,true
+Bank B,25,55,40000,false,24,654321,false
+Bank C,22,65,35000,true,18,789012,true
+Bank D,20,50,25000,false,6,456789,false

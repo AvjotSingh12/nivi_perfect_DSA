@@ -1,0 +1,6 @@
+﻿bankName,loanType,minExperienceMonths,ageMin,ageMax,pfDeduction,bachelorRequired,pincode
+Bank A,Business,12,25,55,TRUE,TRUE,560001
+Bank B,Home,21,30,0,FALSE,TRUE,110001
+Bank c,vehicle,5,22,50,TRUE,FALSE,400001
+,,,,,,,
+,,,,,,,

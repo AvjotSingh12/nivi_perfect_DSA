@@ -3,9 +3,17 @@ const express = require("express");
 const router = express.Router();
 const { checkCompanyCat, autoCompleteCompany } = require("../controllers/companyController"); // Import the controller function
 
+// companyCategoryRoutes.js
+const multer = require("multer");
+
+// Setup Multer for file uploads
+const upload = multer({ dest: "uploads/" }); // File will be stored temporarily in "uploads/" folder
 
 
-// Define the route and link it to the controller function
+const { uploadCompanyCategories } = require('../controllers/companyController'); // Correct path to controller
+
+// Define the route
+router.post('/uploadCompanies',upload.single("file"), uploadCompanyCategories); 
 router.get("/checkCompanyCat", checkCompanyCat);
 router.get("/autocompleteCompany", autoCompleteCompany);
 

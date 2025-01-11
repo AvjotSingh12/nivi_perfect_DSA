@@ -1,0 +1,3 @@
+bankName,minAge,maxAge,requiredBusinessVintage,minAverageBankBalance,allowedEntityTypes,allowedBusinessOperationForms,requiresITR,minITRYears,requiresAuditedITR,requiresGSTCertificate,requiresGSTReturnsFiling,additionalCriteria
+ABC Bank,21,60,3 years,50000,Sole Proprietorship,Shop,TRUE,3,TRUE,TRUE,TRUE,Minimum turnover 5 Lakh
+XYZ Bank,25,65,5 years,100000,Private Limited,Office,TRUE,2,FALSE,TRUE,FALSE,Good repayment history
