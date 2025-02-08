@@ -36,10 +36,6 @@ app.use("/api", userRoutes);
 app.use('/api/loanCriteria', loanCriteriaRoutes);
 app.use('/api/seed', seedRoutes);
 
- // Prefix all pincode routes with /api/pincodes
-
-
-
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
