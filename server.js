@@ -35,6 +35,7 @@ app.use("/api", companyRoutes);
 app.use("/api", userRoutes);
 app.use('/api/loanCriteria', loanCriteriaRoutes);
 app.use('/api/seed', seedRoutes);
+
  // Prefix all pincode routes with /api/pincodes
 
 
