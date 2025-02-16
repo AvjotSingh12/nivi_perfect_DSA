@@ -34,10 +34,10 @@ app.use("/api", pincodeRoutes);
 app.use("/api", companyRoutes);
 app.use("/api", userRoutes);
 app.use('/api/loanCriteria', loanCriteriaRoutes);
-app.use('/api/seed', seedRoutes);
+app.use('/api', seedRoutes);
 
 app.get("/", (req, res) => {
-    res.json({ message: "Welcome Home! 🎉" });
+    res.json({ message: "Welcome to nivifinivest backend " });
   });
 
 app.listen(port, () => {

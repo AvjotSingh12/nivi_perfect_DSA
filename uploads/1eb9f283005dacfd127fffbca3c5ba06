@@ -1,4 +1,0 @@
-"bankName,loanType,minExperienceMonths,ageMin,ageMax,pfDeduction,bachelorRequired,pincode"
-"Bank A,Personal,6,21,60,Yes,Yes,110001"
-"Bank B,Home,12,25,65,Yes,No,110002"
-"Bank C,Personal,3,18,55,No,Yes,110003"

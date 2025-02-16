@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 
 const BankSchema = new mongoose.Schema({
-  bankName: { type: String, required: true },
-  address: { type: String },
-  contact_info: { type: String },
+  bankNames: {type: String, required: true},
+  logoUrl : {type: String, required: true},
+  products : {type: String, required: true}
 });
 
 module.exports = mongoose.model("Bank", BankSchema);
