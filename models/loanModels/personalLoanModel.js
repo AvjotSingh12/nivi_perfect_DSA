@@ -1,44 +1,24 @@
 const mongoose = require("mongoose");
 
-// Define the schema
 const PersonalLoanSchema = new mongoose.Schema({
-  bankName: {
-    type: String,
-    required: true, // Mandatory field for the bank name
-  },
-  minAge: {
-    type: Number,
-    min: 18, // Assuming a minimum age of 18
-    max: 70, // Assuming a maximum age of 70
-    required: true, // Mandatory field
-  },
-  maxAge: {
-    type: Number,
-    min: 18,
-    max: 70,
-    required: true, // Mandatory field
-  },
+  bank_id: { type: mongoose.Schema.Types.ObjectId, ref: "Bank", required: true },
+  bankName: { type: String, required: true },
+  minAge: { type: Number, required: true },
+  maxAge: { type: Number, required: true },
   minMonthlyIncome: {
     type: Number,
-    required: true, // Mandatory field for minimum monthly income
+    required: function () {
+      return this.isNew && (!this.categorywiseincome || this.categorywiseincome.length === 0);
+    },
   },
-  bachelorAccommodationRequired: {
-    type: Boolean, // Restrict to true/false (Yes/No in boolean form)
-    required: true,
+  categorywiseincome: {
+    type: Array,
+    default: [],
   },
-  minExperienceMonths: {
-    type: Number,
-    min: 0, // Minimum work experience cannot be negative
-    required: true, // Mandatory field
-  },
- 
-  pfDeduction: {
-    type: Boolean, // Restrict to true/false
-    required: true,
-  },
+  bachelorAccommodationRequired: { type: Boolean, required: true },
+  minExperienceMonths: { type: Number, required: true },
+  pfDeduction: { type: Boolean, required: true },
 });
 
-// Create the model
-const PersonalLoan = mongoose.model("PersonalLoanCriteria", PersonalLoanSchema);
-
+const PersonalLoan = mongoose.model("PersonalLoan", PersonalLoanSchema);
 module.exports = PersonalLoan;

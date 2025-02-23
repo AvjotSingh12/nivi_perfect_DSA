@@ -6,6 +6,10 @@ const companyCategorySchema = new mongoose.Schema({
     ref: 'Bank', // Assuming 'Bank' is the model name
     required: true,
   },
+  bankName: {
+    type: String, // Add bank name field
+    required: true,
+  },
   categories: [
     {
       categoryName: {

@@ -2,98 +2,212 @@ const admin = require('firebase-admin');
 const {db} = require('../config/firebaseConfig');
 
 // companyCategoryController.js
-const CompanyCategory = require('../models/companyCategoryModel');
 const Bank = require('../models/bankModel');
-const fs = require('fs');
-const csv = require('csv-parser');
+const fs = require("fs");
+const csv = require("csv-parser");
+const CompanyCategory = require("../models/companyCategoryModel"); // Update with your actual model path
 
+// const uploadCompanyCategories = async (req, res) => {
+//   try {
+//     const filePath = req.file.path; // Path of uploaded CSV file
+//     const companyCategoriesData = [];
+
+//     fs.createReadStream(filePath)
+//       .pipe(csv())
+//       .on("data", (row) => {
+//         companyCategoriesData.push(row);
+//       })
+//       .on("end", async () => {
+//         try {
+//           const bulkOps = [];
+//           const bankNamesSet = new Set();
+//           const categoryData = {};
+
+//           // Collect all bank names to fetch them in one query
+//           for (const entry of companyCategoriesData) {
+//             if (entry["BANK NAME"] && entry["CAT"] && entry["COMPANY NAME"] && entry["MIN SALARY"]) {
+//               bankNamesSet.add(entry["BANK NAME"].trim());
+//             }
+//           }
+
+//           // Fetch all banks at once
+//           const banks = await Bank.find({ bankName: { $in: Array.from(bankNamesSet) } });
+//           const bankMap = new Map(banks.map(bank => [bank.bankName.toLowerCase(), bank._id]));
+
+//           for (const entry of companyCategoriesData) {
+//             const bankName = entry["BANK NAME"].trim();
+//             const categoryName = entry["CAT"].trim();
+//             const minSalary = entry["MIN SALARY"].trim();
+//             const companies = entry["COMPANY NAME"].trim();
+
+//             if (!bankName || !categoryName || !companies || !minSalary) {
+//               console.error("Skipping row due to missing data:", entry);
+//               continue;
+//             }
+
+//             let bankId = bankMap.get(bankName.toLowerCase());
+
+//             if (!bankId) {
+//               // Create new bank if it doesn't exist
+//               const newBank = await Bank.create({ bankName });
+//               bankId = newBank._id;
+//               bankMap.set(bankName.toLowerCase(), bankId);
+//             }
+
+//             const companyArray = companies.split(",").map((c) => c.trim());
+
+//             // Prepare key for unique categories per bank
+//             const key = `${bankId}_${categoryName}`;
+
+//             if (!categoryData[key]) {
+//               categoryData[key] = {
+//                 bank_id: bankId,
+//                 bankName,
+//                 categoryName,
+//                 minSalary,
+//                 companies: new Set(),
+//               };
+//             }
+
+//             companyArray.forEach((company) => categoryData[key].companies.add(company));
+//           }
+
+//           for (const key in categoryData) {
+//             const { bank_id, bankName, categoryName, minSalary, companies } = categoryData[key];
+
+//             // Update categories array, ensure category exists first
+//             bulkOps.push({
+//               updateOne: {
+//                 filter: { bank_id, "categories.categoryName": categoryName },
+//                 update: {
+//                   $set: {
+//                     "categories.$.minimumSalary": minSalary,
+//                   },
+//                   $addToSet: {
+//                     "categories.$.companies": { $each: Array.from(companies).map(name => ({ name })) },
+//                   },
+//                 },
+//               },
+//             });
+
+//             // If category doesn't exist, add it
+//             bulkOps.push({
+//               updateOne: {
+//                 filter: { bank_id },
+//                 update: {
+//                   $addToSet: {
+//                     categories: {
+//                       categoryName,
+//                       minimumSalary: minSalary,
+//                       companies: Array.from(companies).map(name => ({ name })),
+//                     },
+//                   },
+//                 },
+//                 upsert: true,
+//               },
+//             });
+//           }
+
+//           if (bulkOps.length > 0) {
+//             await CompanyCategory.bulkWrite(bulkOps);
+//           }
+
+//           fs.unlinkSync(filePath);
+
+//           res.status(201).json({
+//             message: "Company categories uploaded and saved successfully!",
+//           });
+//         } catch (error) {
+//           console.error("Error processing CSV:", error);
+//           res.status(500).json({ message: "Error processing CSV file." });
+//         }
+//       });
+//   } catch (error) {
+//     console.error("Error uploading company categories:", error);
+//     res.status(500).json({ message: error.message });
+//   }
+// };
 const uploadCompanyCategories = async (req, res) => {
   try {
-    const filePath = req.file.path;
+    const filePath = req.file.path; // Path of uploaded CSV file
     const companyCategoriesData = [];
 
     fs.createReadStream(filePath)
-      .pipe(csv({ headers: ['bank_name', 'categoryName', 'minimum_salary', 'companies'] })) // Explicitly set headers
+      .pipe(csv())
       .on("data", (row) => {
         companyCategoriesData.push(row);
       })
       .on("end", async () => {
-        for (const entry of companyCategoriesData) {
-          const { bank_name, categoryName, minimum_salary, companies } = entry;
+        try {
+          const bulkOps = [];
 
-          // Debug: Log CSV data to verify
-          console.log("Processing row:", entry);
+          for (const entry of companyCategoriesData) {
+            const bankName = entry["BANK NAME"];
+            const categoryName = entry["CAT"];
+            const minSalary = entry["MIN SALARY"];
+            const companies = entry["COMPANY NAME"];
 
-          if (!bank_name || !categoryName || !minimum_salary || !companies) {
-            console.error("Missing required data:", entry);
-            continue; // Skip rows with missing data
-          }
+            if (!bankName || !categoryName || !companies || !minSalary) {
+              console.error("Skipping row due to missing data:", entry);
+              continue;
+            }
 
-          // Check if the bank exists
-          let bank = await Bank.findOne({ bankName: bank_name });  // Use bankName if that's the field in your schema
-          
-          // If the bank doesn't exist, create it
-          if (!bank) {
-            console.log(`Bank not found: ${bank_name}. Creating new bank.`);
-            bank = new Bank({ bankName: bank_name }); // Use bankName if that's the field in your schema
-            await bank.save();
-          }
-
-          // Ensure minimum_salary is a valid number
-          const salary = Number(minimum_salary);
-          if (isNaN(salary)) {
-            console.error(`Invalid minimum_salary for category ${categoryName} at ${bank_name}`);
-            continue; // Skip invalid salary rows
-          }
-
-          const companyArray = companies
-            ? companies.split(",").map((company) => company.trim())
-            : [];
-
-          // Find or create the company category for the bank
-          let companyCategory = await CompanyCategory.findOne({ bank_id: bank._id });
-
-          if (!companyCategory) {
-            companyCategory = new CompanyCategory({
-              bank_id: bank._id,
-              categories: [],
+            // Check if the bank exists
+            const bank = await Bank.findOne({
+              bankNames: new RegExp(`^${bankName.trim()}$`, "i"),
             });
-          }
 
-          // Check if the category already exists for the bank
-          let existingCategory = companyCategory.categories.find(
-            (category) => category.categoryName === categoryName
-          );
+            if (!bank) {
+              console.log(`Bank does not exist, skipping: ${bankName}`);
+              continue; // Skip if bank does not exist
+            }
 
-          if (existingCategory) {
-            // Update the existing category with the new companies and minimum salary
-            existingCategory.companies = [
-              ...new Set([
-                ...existingCategory.companies.map((c) => c.name),
-                ...companyArray,
-              ]),
-            ].map((name) => ({ name }));
-            existingCategory.minimumSalary = Math.min(
-              existingCategory.minimumSalary,
-              salary
+            // Convert companies string to an array
+            const companyArray = companies.split(",").map((company) => company.trim());
+
+            // Ensure the document exists with an empty `categories` array if not present
+            await CompanyCategory.updateOne(
+              { bank_id: bank._id },
+              { $setOnInsert: { categories: [] } }, // Initialize categories if missing
+              { upsert: true }
             );
-          } else {
-            // Add a new category if it doesn't exist
-            companyCategory.categories.push({
-              categoryName: categoryName,
-              minimumSalary: salary,
-              companies: companyArray.map((company) => ({ name: company })),
-            });
+
+            // Update or insert the category inside `categories` array
+            await CompanyCategory.updateOne(
+              { bank_id: bank._id, "categories.categoryName": categoryName },
+              {
+                $set: { "categories.$.minimumSalary": minSalary },
+                $addToSet: {
+                  "categories.$.companies": { $each: companyArray.map((name) => ({ name })) },
+                },
+              }
+            );
+
+            // If the category does not exist, push a new category
+            await CompanyCategory.updateOne(
+              { bank_id: bank._id, "categories.categoryName": { $ne: categoryName } },
+              {
+                $push: {
+                  categories: {
+                    categoryName,
+                    minimumSalary: minSalary,
+                    companies: companyArray.map((name) => ({ name })),
+                  },
+                },
+              }
+            );
           }
 
-          // Save the company category
-          await companyCategory.save();
+          // Delete CSV file after processing
+          fs.unlinkSync(filePath);
+
+          res.status(201).json({
+            message: "Company categories uploaded and saved successfully!",
+          });
+        } catch (error) {
+          console.error("Error processing CSV:", error);
+          res.status(500).json({ message: "Error processing CSV file." });
         }
-
-        // Clean up the uploaded file
-        fs.unlinkSync(filePath);
-
-        res.status(201).json({ message: "Company categories uploaded and saved successfully!" });
       });
   } catch (error) {
     console.error("Error uploading company categories:", error);
@@ -102,9 +216,100 @@ const uploadCompanyCategories = async (req, res) => {
 };
 
 
-module.exports = {
-  uploadCompanyCategories
-};
+
+// const uploadCompanyCategories = async (req, res) => {
+//   try {
+//     const filePath = req.file.path; // Path of uploaded CSV file
+//     const companyCategoriesData = [];
+
+//     fs.createReadStream(filePath)
+//       .pipe(csv())
+//       .on("data", (row) => {
+//         companyCategoriesData.push(row);
+//       })
+//       .on("end", async () => {
+//         try {
+//           for (const entry of companyCategoriesData) {
+//             const bankName = entry["BANK NAME"];
+//             const categoryName = entry["CAT"];
+//             const minSalary = entry["MIN SALARY"]
+//             const companies = entry["COMPANY NAME"];
+
+//             if (!bankName || !categoryName || !companies || !minSalary ) {
+//               console.error("Skipping row due to missing data:", entry);
+//               continue;
+//             }
+
+//             // Check if the bank already exists
+//             const bank = await Bank.findOne({
+//               bankNames: new RegExp(`^${bankName.trim()}$`, "i")
+//             });
+
+//             if (!bank) {
+//               console.log(`Bank does not exist, skipping: ${bankName}`);
+//               continue; // Skip if bank does not exist
+//             }
+
+//             // Convert companies string to array
+//             const companyArray = companies.split(",").map((company) => company.trim());
+
+//             // Check if CompanyCategory exists for the bank
+//             let companyCategory = await CompanyCategory.findOne({ bank_id: bank._id });
+
+//             if (!companyCategory) {
+//               // Create a new CompanyCategory entry if it doesn't exist
+//               companyCategory = new CompanyCategory({
+//                 bank_id: bank._id,
+//                 categories: [],
+//               });
+//             }
+
+//             // Check if the category already exists
+//             let existingCategory = companyCategory.categories.find(
+//               (category) => category.categoryName === categoryName
+//             );
+
+//             if (existingCategory) {
+//               // Merge companies into existing category
+//               existingCategory.companies = [
+//                 ...new Set([...existingCategory.companies.map((c) => c.name), ...companyArray]),
+//               ].map((name) => ({ name }));
+//             } else {
+//               // Add a new category with companies
+//               companyCategory.categories.push({
+//                 categoryName: categoryName,
+//                 minimumSalary: minSalary,
+//                 companies: companyArray.map((company) => ({ name: company })),
+//               });
+//             }
+
+//             // Save the updated company category
+//             await companyCategory.save();
+//           }
+
+//           // Delete CSV file after processing
+//           fs.unlinkSync(filePath);
+
+//           res.status(201).json({
+//             message: "Company categories uploaded and saved successfully!",
+//           });
+//         } catch (error) {
+//           console.error("Error processing CSV:", error);
+//           res.status(500).json({ message: "Error processing CSV file." });
+//         }
+//       });
+//   } catch (error) {
+//     console.error("Error uploading company categories:", error);
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+module.exports = { uploadCompanyCategories };
+
+
+
+
+
 
   
 const checkCompanyCat  = async (req, res) => {
