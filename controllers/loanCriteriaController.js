@@ -273,7 +273,7 @@ exports.uploadPersonalLoanCriteria = async (req, res) => {
           // **Step 4: Bulk Insert**
           if (validRecords.length > 0) {
 
-          //  await PersonalLoan.insertMany(validRecords);
+            await PersonalLoan.insertMany(validRecords);
 
           }
 
