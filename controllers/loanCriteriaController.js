@@ -653,7 +653,7 @@ exports.getBanksByPincodeAndCategory = async (req, res) => {
       return res.status(404).json({ message: "Company category not found" });
     }
 
-    console.log(matchingBankIds);
+ 
     const eligibleBanks = [];
 
     // Check loan criteria for each bank in the set
