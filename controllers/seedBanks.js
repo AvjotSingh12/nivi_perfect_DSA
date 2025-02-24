@@ -3,6 +3,29 @@ const path = require('path');
 const csv = require('csv-parser');
 const Bank = require('../models/bankModel');
 
+const nonPanIndiaBanks = ["FIBE", "FINNABLE", "IDFC FIRST BANK", "INCRED", "INDUSIND BANK"];
+
+exports.addPanIndiaField = async (req, res) => {
+    try {
+        // Step 1: Ensure all banks have `pan_india_service: true` by default
+        await Bank.updateMany(
+            { pan_india_service: { $exists: false } },
+            { $set: { pan_india_service: true } }
+        );
+
+        // Step 2: Set `pan_india_service: false` for the hardcoded banks
+        await Bank.updateMany(
+            { bankNames: { $in: nonPanIndiaBanks } },
+            { $set: { pan_india_service: false } }
+        );
+
+        res.status(200).json({ message: "Bank dataset updated successfully!" });
+    } catch (error) {
+        console.error("Error updating bank dataset:", error);
+        res.status(500).json({ message: "Failed to update bank dataset", error: error.message });
+    }
+}
+
 exports.addBanks = async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: "CSV file is required!" });

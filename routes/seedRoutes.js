@@ -15,7 +15,7 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const { addBanks } = require('../controllers/seedBanks');
+const { addBanks, addPanIndiaField } = require('../controllers/seedBanks');
 
 const router = express.Router();
 
@@ -32,6 +32,8 @@ const upload = multer({
 });
 
 // Route to handle CSV uploads
+
+router.put('/updateBanks' , addPanIndiaField);
 router.post('/addBanks', upload.single('file'), addBanks);
 
 module.exports = router;
