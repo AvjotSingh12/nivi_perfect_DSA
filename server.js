@@ -23,16 +23,9 @@ require('dotenv').config();
 const connectMongoDB = require("./config/db");
 
 const bodyParser = require('body-parser');
-const cors = require('cors');
 const app = express();
-const corsOptions = {
-  origin: '*', // Allow all origins (change this for security)
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
+const cors = require('cors')({origin: true});
 
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); 
 
 app.use(bodyParser.json());
 connectMongoDB();
