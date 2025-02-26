@@ -590,13 +590,21 @@ exports.getBanksByPincodeAndCategory = async (req, res) => {
     if (!pincode || !companyName || !age || !monthlyIncome || !experienceMonths || pfDeduction === undefined || bachelorAccommodation === undefined) {
       return res.status(400).json({ message: "All query parameters are required" });
     }
-    // Convert string values to proper data types
+
+    const experienceMapping = {
+      "Less than 1 Month": 0,
+      "1 month": 1,
+      "2 month": 2,
+      "3 months-6months": 3,
+      "6 months-1Year": 6,
+      "1+ Year": 12
+    };
+    
     const userAge = parseInt(age);
     const userMonthlyIncome = parseFloat(monthlyIncome);
-    const userExperienceMonths = parseInt(experienceMonths);
+    const userExperienceMonths = experienceMapping[experienceMonths] ?? parseInt(experienceMonths);    
     const userBachelorAccommodation = bachelorAccommodation.toLowerCase() === "yes";
     const userPfDeduction = pfDeduction.toLowerCase() === "yes";
-     
     const panIndiaBanks = await Bank.find({ pan_india_service: true }) // Ensure filtering only pan-India banks
     .select("bankNames logoUrl")
     .lean();
