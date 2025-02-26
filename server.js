@@ -24,8 +24,8 @@ const connectMongoDB = require("./config/db");
 
 const bodyParser = require('body-parser');
 const app = express();
-const cors = require('cors')({origin: true});
-
+const cors = require('cors');
+app.use(cors({ origin: 'https://app.flutterflow.io' }));
 
 app.use(bodyParser.json());
 connectMongoDB();
