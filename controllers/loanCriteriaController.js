@@ -605,7 +605,17 @@ exports.getBanksByPincodeAndCategory = async (req, res) => {
     const userExperienceMonths = experienceMapping[experienceMonths] ?? parseInt(experienceMonths);    
     const userBachelorAccommodation = bachelorAccommodation.toLowerCase() === "yes";
     const userPfDeduction = pfDeduction.toLowerCase() === "yes";
-    const panIndiaBanks = await Bank.find({ pan_india_service: true }) // Ensure filtering only pan-India banks
+
+    console.log("Pincode:", pincode);
+    console.log("Company Name:", companyName);
+    console.log("User Age:", userAge);
+    console.log("User Monthly Income:", userMonthlyIncome);
+    console.log("User Experience Months:", userExperienceMonths);
+    console.log("User Bachelor Accommodation:", userBachelorAccommodation);
+    console.log("User PF Deduction:", userPfDeduction);
+    
+
+    const panIndiaBanks = await Bank.find({ pan_india_service: true })
     .select("bankNames logoUrl")
     .lean();
   
@@ -660,7 +670,8 @@ exports.getBanksByPincodeAndCategory = async (req, res) => {
     if (matchingBankIds.size === 0) {
       return res.status(404).json({ message: "Company category not found" });
     }
-
+     
+    console.log("bank ids" , matchingBankIds);
  
     const eligibleBanks = [];
 
@@ -685,6 +696,7 @@ exports.getBanksByPincodeAndCategory = async (req, res) => {
         // Find the bank details
         const bankDetails = allBanks.find(bank => bank._id.toString() === bankId);
         if (bankDetails) {
+          console.log("found banks:", bankDetails.bankNames);
           eligibleBanks.push({ bankNames: bankDetails.bankNames, logoUrl: bankDetails.logoUrl });
         }
       }
