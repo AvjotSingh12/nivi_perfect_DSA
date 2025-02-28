@@ -1,62 +1,95 @@
 const mongoose = require('mongoose');
 
-const BusinessSchema = new mongoose.Schema({
-  bankName: {
+const BusinessLoanCriteriaSchema = new mongoose.Schema({
+  
+  bank_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Bank", // Ensure "Bank" matches your Bank collection name
+    required: true
+  },
+  bankNames: {
     type: String,
     required: true, // Mandatory field for the bank name
   },
   minAge: {
     type: Number,
-    required: true, // Minimum age of the applicant required by the bank
+    required: true,
+    min: 18,
+    max: 70, // Ensuring applicant's age is within a valid range
   },
   maxAge: {
     type: Number,
-    required: true, // Maximum age of the applicant required by the bank
+    required: true,
   },
   requiredBusinessVintage: {
-    type: String, // Minimum business vintage (e.g., "3 years")
+    type: Number, // Number of years in business (string to match "3 years")
     required: true,
   },
   minAverageBankBalance: {
-    type: Number, // Minimum average bank balance required by the bank
-    required: true,
-  },
-  allowedEntityTypes: {
-    type: [String], // Array of allowed entity types (e.g., ["Sole Proprietorship", "LLP", "Private Limited"])
+    type: Number,
     required: true,
   },
   allowedBusinessOperationForms: {
-    type: [String], // Array of allowed operation forms (e.g., ["Shop", "Office", "Factory"])
+    type: [String], // Array of allowed business operation forms
+    required: true,
+  },
+  OperativeBankAccount: {
+    type: [String], // Fixed incorrect type
     required: true,
   },
   requiresITR: {
     type: Boolean,
-    required: true, // Whether ITR is mandatory
+    required: true,
   },
   minITRYears: {
-    type: Number, // Minimum number of ITR years required, if ITR is mandatory
+    type: Number,
     required: function () {
-      return this.requiresITR;
+      return this.requiresITR; // Only required if ITR is needed
     },
   },
   requiresAuditedITR: {
-    type: Boolean, // Whether audited ITR is mandatory
+    type: Boolean,
     required: function () {
-      return this.requiresITR;
+      return this.requiresITR; // Only required if ITR is needed
     },
   },
   requiresGSTCertificate: {
     type: Boolean,
-    required: true, // Whether GST Certificate is mandatory
+    required: true,
   },
   requiresGSTReturnsFiling: {
     type: Boolean,
-    required: true, // Whether GST return filing is mandatory
+    required: true,
+  },
+  turnover: {
+    type: Number,
+    required: true,
+  },
+  Ownership: {
+    type: [String], // Array since CSV contains multiple values (Own, Rented)
+    required: true,
+  },
+  Coapplicant: {
+    type: Boolean, // TRUE/FALSE, so Boolean is better
+    required: true,
+  },
+  CoapplicantMinAge: {
+    type: Number,
+    required: true,
+    min: 18,
+  },
+  CoapplicantMaxAge: {
+    type: Number,
+    required: true,
+  },
+  CibilisNegative: {
+    type: Boolean,
+    required: true,
   },
   additionalCriteria: {
-    type: String, // Any additional criteria the bank might specify
+    type: String, // Any additional information
     required: false,
   },
 });
 
-module.exports = mongoose.model('BusinessLoanCriteria', BusinessSchema);
+module.exports = mongoose.model('BusinessLoanCriteria', BusinessLoanCriteriaSchema);

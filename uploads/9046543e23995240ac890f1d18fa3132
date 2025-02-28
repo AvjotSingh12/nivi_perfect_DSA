@@ -1,0 +1,47 @@
+bankNames,minAge,maxAge,requiredBusinessVintage,minAverageBankBalance,allowedBusinessOperationForms,OperativeBankAccount,requiresITR,minITRYears,requiresAuditedITR,requiresGSTCertificate,requiresGSTReturnsFiling,turnover,Ownership,Coapplicant,CoapplicantMinAge,CoapplicantMaxAge,CibilisNegative
+GODREJ FINANCE,21,60,3 years,50000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,3,TRUE,TRUE,TRUE,5000000,"""Own"" , ""Rented""",TRUE,21,65,FALSE
+TRUCAP FINANCE,21,60,3 years,20000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,2,FALSE,TRUE,FALSE,5000000,"""Own"" , ""Rented""",TRUE,23,65,TRUE
+DEUTCHE BANK,25,60,3 years,100000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,2,TRUE,TRUE,TRUE,10000000,"""Own"" , ""Rented""",TRUE,23,65,TRUE
+ARKA FINCAP,25,56,3 years,100000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,2,TRUE,TRUE,TRUE,10000000,"""Own"" , ""Rented""",TRUE,25,56,FALSE
+SMC GLOBAL,25,60,3 years,100000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,2,TRUE,TRUE,TRUE,10000000,"""Own"" , ""Rented""",TRUE,25,60,FALSE
+SBM BANK,23,60,3 years,50000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",FALSE,0,FALSE,FALSE,FALSE,10000000,"""Own"" , ""Rented""",FALSE,23,60,FALSE
+KREDITBEE,25,60,1 years,10000,"""Home"" , ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",FALSE,0,FALSE,FALSE,FALSE,5000000,"""Own"" , ""Rented""",TRUE,25,60,FALSE
+ASHV FINANCE,21,60,2 years,50000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",TRUE,1,FALSE,FALSE,FALSE,5000000,"""Own"" , ""Rented""",FALSE,21,60,FALSE
+UGRO CAPITAL ,23,60,1 years,20000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,3,FALSE,FALSE,FALSE,5000000,"""Own"" , ""Rented""",FALSE,23,60,TRUE
+MAHINDRA FINANCE,28,60,3 years,50000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",FALSE,0,FALSE,FALSE,FALSE,5000000,"""Own"" , ""Rented""",TRUE,28,60,TRUE
+FTCASH,21,60,1 years,10000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",FALSE,0,FALSE,FALSE,FALSE,1000000,"""Own"" , ""Rented""",TRUE,21,60,TRUE
+NEOGROWTH,25,60,1 years,10000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",FALSE,0,FALSE,FALSE,FALSE,1000000,"""Own"" , ""Rented""",FALSE,25,60,TRUE
+KINARA CAPITAL,22,60,3 years,50000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",FALSE,0,FALSE,FALSE,FALSE,5000000,"""Own""",TRUE,22,60,TRUE
+AMBIT FINVEST,23,60,1 years,10000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",FALSE,0,FALSE,FALSE,FALSE,1000000,"""Own""",TRUE,23,60,TRUE
+INDIFI,21,60,1 years,20000,"""Home"" , ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",TRUE,2,FALSE,FALSE,FALSE,2500000,"""Own"" , ""Rented""",FALSE,21,60,TRUE
+PROTIUM,23,60,1 years,10000,"""Home"" , ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",FALSE,0,FALSE,FALSE,FALSE,2400000,"""Own"" , ""Rented""",FALSE,23,60,TRUE
+FEDFINA,25,60,3 years,50000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,2,FALSE,FALSE,FALSE,10000000,"""Own"" , ""Rented""",FALSE,25,60,TRUE
+CLIX CAPITAL,23,60,2 years,50000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,2,FALSE,FALSE,FALSE,10000000,"""Own"" , ""Rented""",FALSE,23,60,TRUE
+FLEXILOANS,21,60,1 years,10000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,1,FALSE,FALSE,FALSE,2500000,"""Own"" , ""Rented""",FALSE,21,60,TRUE
+MANBA FINANCE,25,60,1 years,10000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",TRUE,2,FALSE,FALSE,FALSE,1000000,"""Own""",FALSE,25,60,TRUE
+LENDINGKART,25,60,1 years,20000,"""Home"" , ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",TRUE,1,FALSE,FALSE,FALSE,1000000,"""Own"" , ""Rented""",FALSE,25,60,TRUE
+IIFL FINANCE,23,60,2 years,50000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",FALSE,0,FALSE,FALSE,FALSE,10000000,"""Own"" , ""Rented""",FALSE,23,60,TRUE
+FULLERTON,23,60,3 years,20000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",TRUE,3,FALSE,FALSE,FALSE,2500000,"""Own"" , ""Rented""",FALSE,23,60,TRUE
+HDB,23,60,1 years,10000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",FALSE,0,FALSE,FALSE,FALSE,1000000,"""Own""",FALSE,23,60,TRUE
+CHOLAMANDALAM,23,60,3 years,100000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,2,FALSE,FALSE,FALSE,10000000,"""Own"" , ""Rented""",FALSE,23,60,TRUE
+L & T ,23,60,3 years,50000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,1,FALSE,FALSE,FALSE,10000000,"""Own"" , ""Rented""",FALSE,23,60,TRUE
+CREDIT SAISON,23,65,2 years,100000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",FALSE,0,FALSE,FALSE,FALSE,2500000,"""Own"" , ""Rented""",FALSE,23,65,TRUE
+POONAWALLA FINCORP,23,65,2 years,100000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",FALSE,0,FALSE,FALSE,FALSE,5000000,"""Own"" , ""Rented""",FALSE,23,65,TRUE
+MAS FINANCIAL SERVICES,23,65,2 years,10000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,2,FALSE,FALSE,FALSE,5000000,"""Own"" , ""Rented""",FALSE,23,65,TRUE
+ADITYA BIRLA CAPITAL,23,65,2 years,100000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",FALSE,0,FALSE,FALSE,FALSE,5000000,"""Own""",FALSE,23,65,TRUE
+HERO FINCORP,23,66,1 years,10000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",FALSE,0,FALSE,FALSE,FALSE,1000000,"""Own"" , ""Rented""",TRUE,23,66,TRUE
+PIRAMAL FINANCE,23,65,2 years,27000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",TRUE,1,FALSE,FALSE,FALSE,1000000,"""Own"" , ""Rented""",TRUE,23,65,TRUE
+SHRIRAM FINANCE,23,68,1 years,15000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",TRUE,1,FALSE,FALSE,FALSE,1000000,"""Own""",TRUE,23,68,TRUE
+TATA CAPITAL,23,60,2 years,100000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",FALSE,0,FALSE,FALSE,FALSE,5000000,"""Own"" , ""Rented""",TRUE,23,60,TRUE
+MUTHOOT FINANCE,23,58,2 years,20000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",TRUE,1,FALSE,FALSE,FALSE,1000000,"""Own"" , ""Rented""",TRUE,23,58,TRUE
+UTKARSH SMALL FINANCE BANK ,23,60,2 years,10000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",FALSE,0,FALSE,FALSE,FALSE,1000000,"""Own"" , ""Rented""",TRUE,23,60,TRUE
+BAJAJ FINSERV,23,60,2 years,100000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",TRUE,2,FALSE,FALSE,FALSE,1000000,"""Own"" , ""Rented""",TRUE,23,60,TRUE
+DBS BANK,21,55,1 years,20000," ""Shop"" , ""Factory"" , ""On Site""","""Saving"" , ""Current"" , ""OD"" , ""CC""",TRUE,0,TRUE,FALSE,FALSE,1000000,"""Own"" , ""Rented""",TRUE,21,55,TRUE
+KOTAK MAHINDRA BANK,25,60,3 years,100000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,1,TRUE,FALSE,FALSE,10000000,"""Own"" , ""Rented""",TRUE,25,60,TRUE
+YES BANK ,25,60,3 years,100000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,0,TRUE,FALSE,FALSE,10000000,"""Own"" , ""Rented""",FALSE,25,60,TRUE
+INDUSIND BANK ,23,65,3 years,100000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,2,TRUE,FALSE,FALSE,10000000,"""Own"" , ""Rented""",FALSE,23,65,TRUE
+BANDHAN BANK,23,60,3 years,100000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,2,TRUE,FALSE,FALSE,5000000,"""Own""",FALSE,23,60,TRUE
+IDFC FIRST BANK,23,65,2 years,50000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,0,TRUE,FALSE,FALSE,5000000,"""Own""",FALSE,23,65,TRUE
+ICICI BANK,23,60,3 years,100000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,0,TRUE,FALSE,FALSE,10000000,"""Own"" , ""Rented""",FALSE,23,60,TRUE
+AXIS BANK,23,60,3 years,100000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,0,TRUE,FALSE,FALSE,10000000,"""Own"" , ""Rented""",FALSE,23,60,TRUE
+HDFC BANK,23,60,3 years,100000," ""Shop"" , ""Factory"" , ""On Site"""," ""Current"" , ""OD"" , ""CC""",TRUE,0,TRUE,FALSE,FALSE,10000000,"""Own"" , ""Rented""",TRUE,23,60,TRUE

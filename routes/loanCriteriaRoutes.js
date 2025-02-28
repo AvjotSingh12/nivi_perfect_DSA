@@ -14,6 +14,10 @@ router.get("/banks", loanCriteriaController.getBanksByPincodeAndCategory);
 
 router.post('/uploadVehicleLoanCriteria', upload.single('file'), loanCriteriaController.uploadVehicleLoanCriteria);
 router.post('/uploadHomeLoanCriteria', upload.single('file'), loanCriteriaController.uploadHomeLoanCriteria);
-router.post('/uploadBusinessLoanCriteria', upload.single('file'), loanCriteriaController.uploadBusinessLoanCriteria);
 
+
+router.post('/uploadBusinessLoanCriteria', upload.single('file'), loanCriteriaController.uploadBusinessLoanCriteria);
+router.get("/getEligibleBanks", loanCriteriaController.checkBusinessLoanEligibility);
+
+router.put("/update", loanCriteriaController.updateBusinessVintage );
 module.exports = router;

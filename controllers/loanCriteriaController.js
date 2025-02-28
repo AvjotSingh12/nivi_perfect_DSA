@@ -294,208 +294,6 @@ exports.uploadPersonalLoanCriteria = async (req, res) => {
     res.status(500).json({ error: "Error processing CSV file." });
   }
 };
-// exports.getBanksByPincode = async (req, res) => {
-//   try {
-//     const { pincode } = req.query;
-
-//     if (!pincode) {
-//       return res.status(400).json({ message: "Pincode is required" });
-//     }
-
-//     // ✅ Fetch banks that provide Pan-India service
-//     const panIndiaBanks = await Bank.find({ pan_india_service: true })
-//       .select("_id bankNames logoUrl")
-//       .lean();
-//     console.log("Pan-India Banks:", panIndiaBanks); // Debugging
-
-//     // ✅ Fetch banks that specifically serve this pincode
-//     const pincodeBanks = await PincodeService.find({ serviceable_pincodes: pincode })
-//       .populate("bank_id", "_id bankNames logoUrl")
-//       .lean();
-//     console.log("Pincode Service Banks:", pincodeBanks); // Debugging
-
-//     // ✅ Extract bank details from pincode services
-//     const specificBanks = pincodeBanks.map(service => service.bank_id);
-
-//     // ✅ Merge results and remove duplicates
-//     const allBanks = [...new Map([...panIndiaBanks, ...specificBanks].map(bank => [bank._id.toString(), bank])).values()];
-
-//     return res.status(200).json({ banks: allBanks });
-
-//   } catch (error) {
-//     console.error("Error fetching banks:", error);
-//     return res.status(500).json({ message: "Internal Server Error", error: error.message });
-//   }
-// };
-
-
-      
-// exports.getBanksByPincodeAndCategory = async (req, res) => {
-//   try {
-//     const { pincode, companyName, age, monthlyIncome, experienceMonths, bachelorAccommodation, pfDeduction } = req.query;
-
-//     if (!pincode || !companyName || !age || !monthlyIncome || !experienceMonths || pfDeduction === undefined || bachelorAccommodation === undefined) {
-//       return res.status(400).json({ message: "All query parameters are required" });
-//     }
-
-//     // Convert string values to proper data types
-//     const userAge = parseInt(age);
-//     const userMonthlyIncome = parseFloat(monthlyIncome);
-//     const userExperienceMonths = parseInt(experienceMonths);
-//     const userBachelorAccommodation = bachelorAccommodation.toLowerCase() === "yes"; ;
-//     const userPfDeduction = pfDeduction.toLowerCase() === "yes";;
-
-//     // ✅ Find the bank that serves the given company
-//     const companyCategoryDoc = await CompanyCategory.findOne({
-//       "categories.companies.name": companyName
-//     })
-//       .select("bank_id")
-//       .lean();
-
-      
-
-//     if (!companyCategoryDoc) {
-//       return res.status(404).json({ message: "Company category not found" });
-//     }
-
-//     const bankId = companyCategoryDoc.bank_id;
-
-   
-
-//     // ✅ Fetch banks that provide Pan-India service and match the bank ID
-//     const panIndiaBanks = await Bank.find({ _id: bankId,  pan_india_service: true })
-//       .select("bankNames logoUrl")
-//       .lean();
-
-     
-//     // ✅ Fetch banks that specifically serve this pincode and match bank ID
-//     const pincodeBanks = await PincodeService.find({ serviceable_pincodes: pincode, bank_id: bankId })
-//       .populate("bank_id", "bankNames logoUrl")
-//       .lean();
-
-//     // ✅ Extract valid bank details from pincode services
-//     const specificBanks = pincodeBanks.map(service => service.bank_id).filter(bank => bank);
-
-//     // ✅ Merge results and remove duplicates
-//     const allBanks = [...new Map([...panIndiaBanks, ...specificBanks].map(bank => [bank._id.toString(), bank])).values()];
-
-//     const personalLoanCriteria = await PersonalLoan.findOne({ bank_id: bankId }).lean();
-
-//     if (!personalLoanCriteria) {
-//       return res.status(404).json({ message: "Loan criteria not found for the bank" });
-//     }
-
-//     const isEligible =
-//       userAge >= personalLoanCriteria.minAge &&
-//       userAge <= personalLoanCriteria.maxAge &&
-//       userExperienceMonths >= personalLoanCriteria.minExperienceMonths &&
-//       userPfDeduction === personalLoanCriteria.pfDeduction &&
-//       userBachelorAccommodation === personalLoanCriteria.bachelorAccommodationRequired &&
-//       (personalLoanCriteria.categorywiseincome.length > 0
-//         ? personalLoanCriteria.categorywiseincome.some(
-//             (category) => userMonthlyIncome >= category.minimumIncome
-//           )
-//         : userMonthlyIncome >= personalLoanCriteria.minMonthlyIncome);
-
-//     return res.status(200).json({
-//       banks: allBanks,
-//       eligibility: isEligible,
-//       message: isEligible ? "You are eligible for a loan from this bank" : "You are not eligible for a loan from this bank"
-//     });
-
-//   } catch (error) {
-//     console.error("Error fetching banks:", error);
-//     return res.status(500).json({ message: "Internal Server Error", error: error.message });
-//   }
-// };
-
-// exports.getBanksByPincodeAndCategory = async (req, res) => {
-//   try {
-//     const { pincode, companyName, age, monthlyIncome, experienceMonths, bachelorAccommodation, pfDeduction } = req.query;
-
-//     if (!pincode || !companyName || !age || !monthlyIncome || !experienceMonths || pfDeduction === undefined || bachelorAccommodation === undefined) {
-//       return res.status(400).json({ message: "All query parameters are required" });
-//     }
-
-//     // Convert string values to proper data types
-//     const userAge = parseInt(age);
-//     const userMonthlyIncome = parseFloat(monthlyIncome);
-//     const userExperienceMonths = parseInt(experienceMonths);
-//     const userBachelorAccommodation = bachelorAccommodation.toLowerCase() === "yes";
-//     const userPfDeduction = pfDeduction.toLowerCase() === "yes";
-  
-//     // ✅ Find the bank that serves the given company
-//     const standardizedCompanyName = companyName.toLowerCase().trim();
-
-//     // ✅ Find the bank that serves the given company
-//     const companyCategoryDoc = await CompanyCategory.findOne({
-//       "categories.companies.name": { $regex: new RegExp(`^${standardizedCompanyName}$`, "i") }
-//     })
-//       .select("bank_id categories.companies.name")
-//       .lean();
-      
-//       const companyCategories = await CompanyCategory.find().select("categories").lean();
-// companyCategories.forEach((categoryDoc, index) => {
-//   console.log(`Document ${index + 1}:`);
-//   categoryDoc.categories.forEach((category, catIndex) => {
-//     console.log(`  Category ${catIndex + 1}:`, category.companies?.map(c => c.name));
-//   });
-// });
-
-//     if (!companyCategoryDoc) {
-//       return res.status(404).json({ message: "Company category not found" });
-//     }
-
-//     const bankId = companyCategoryDoc.bank_id;
-
-//     // ✅ Fetch banks that provide Pan-India service and match the bank ID
-//     const panIndiaBanks = await Bank.find({ _id: bankId, pan_india_service: true })
-//       .select("bankNames logoUrl")
-//       .lean();
-
-//     // ✅ Fetch banks that specifically serve this pincode and match bank ID
-//     const pincodeBanks = await PincodeService.find({ serviceable_pincodes: pincode, bank_id: bankId })
-//       .populate("bank_id", "bankNames logoUrl")
-//       .lean();
-
-//     // ✅ Extract valid bank details from pincode services
-//     const specificBanks = pincodeBanks.map(service => service.bank_id).filter(bank => bank);
-
-//     // ✅ Merge results and remove duplicates
-//     const allBanks = [...new Map([...panIndiaBanks, ...specificBanks].map(bank => [bank._id.toString(), bank])).values()];
-
-//     // ✅ Check eligibility criteria
-//     const personalLoanCriteria = await PersonalLoan.findOne({ bank_id: bankId }).lean();
-
-//     if (!personalLoanCriteria) {
-//       return res.status(404).json({ message: "Loan criteria not found for the bank" });
-//     }
-
-//     const isEligible =
-//       userAge >= personalLoanCriteria.minAge &&
-//       userAge <= personalLoanCriteria.maxAge &&
-//       userExperienceMonths >= personalLoanCriteria.minExperienceMonths &&
-//       userPfDeduction === personalLoanCriteria.pfDeduction &&
-//       userBachelorAccommodation === personalLoanCriteria.bachelorAccommodationRequired &&
-//       (personalLoanCriteria.categorywiseincome.length > 0
-//         ? personalLoanCriteria.categorywiseincome.some(
-//             (category) => userMonthlyIncome >= category.minimumIncome
-//           )
-//         : userMonthlyIncome >= personalLoanCriteria.minMonthlyIncome);
-
-//     // ✅ Return only bank names and URLs if eligible
-//     if (isEligible) {
-//       return res.status(200).json({ banks: allBanks.map(({ bankNames, logoUrl }) => ({ bankNames, logoUrl })) });
-//     } else {
-//       return res.status(200).json({ banks: [], message: "You are not eligible for a loan from this bank" });
-//     }
-
-//   } catch (error) {
-//     console.error("Error fetching banks:", error);
-//     return res.status(500).json({ message: "Internal Server Error", error: error.message });
-//   }
-// };
-
 const standardizeCompanyName = (name) => {
   if (!name || typeof name !== "string") return "";
   
@@ -504,82 +302,6 @@ const standardizeCompanyName = (name) => {
       .replace(/\s+/g, ' ')  // Replace multiple spaces with a single space
       .trim()                // Trim leading and trailing spaces
       .toUpperCase();        // Convert to uppercase
-};
-const getBanksByPincode = async (pincode) => {
-  try {
-    if (!pincode) {
-      return { message: "Pincode is required" };
-    }
-
-    // ✅ Fetch banks that provide Pan-India service
-    const panIndiaBanks = await Bank.find({ pan_india_service: true })
-      .select("_id bankNames logoUrl")
-      .lean();
-
-    // ✅ Fetch banks that specifically serve this pincode
-    const pincodeBanks = await PincodeService.find({ serviceable_pincodes: pincode })
-      .populate("bank_id", "_id bankNames logoUrl")
-      .lean();
-
-    // ✅ Extract bank details from pincode services
-    const specificBanks = pincodeBanks.map(service => service.bank_id);
-
-    // ✅ Merge results and remove duplicates
-    const allBanks = [...new Map([...panIndiaBanks, ...specificBanks].map(bank => [bank._id.toString(), bank])).values()];
-
-    return { banks: allBanks };
-
-  } catch (error) {
-    console.error("Error fetching banks:", error);
-    return { message: "Internal Server Error", error: error.message };
-  }
-};
-
-const getCompanyCategory = async (name) => {
-  try {
-    // ✅ Standardize company name
-    const standardizedCompanyName = standardizeCompanyName(name.trim().replace(/^"|"$/g, ""));
-
-    // ✅ Fetch company categories
-    const companyCategories = await CompanyCategory.find().select("bank_id categories").lean();
-
-    let bankResults = [];
-
-    for (const categoryDoc of companyCategories) {
-      for (const category of categoryDoc.categories) {
-        const foundCompany = category.companies.find(
-          (company) => standardizeCompanyName(company.name) === standardizedCompanyName
-        );
-
-        if (foundCompany) {
-          bankResults.push({
-            bank_id: categoryDoc.bank_id,
-            category: category.categoryName,
-          });
-        }
-      }
-    }
-
-    if (bankResults.length === 0) {
-      return { message: "Company category not found in any bank" };
-    }
-
-    // ✅ Fetch bank names based on bank IDs
-    const bankIds = bankResults.map((entry) => entry.bank_id);
-    const banks = await Bank.find({ _id: { $in: bankIds } }).select("bankNames").lean();
-
-    // ✅ Map bank names with categories
-    return bankResults.map((entry) => {
-      const bank = banks.find((b) => b._id.toString() === entry.bank_id.toString());
-      return {
-        bankName: bank ? bank.bankNames : "Unknown Bank",
-        category: entry.category,
-      };
-    });
-  } catch (error) {
-    console.error("Error fetching company category:", error);
-    return { message: "Internal Server Error", error: error.message };
-  }
 };
 
 
@@ -710,94 +432,6 @@ exports.getBanksByPincodeAndCategory = async (req, res) => {
   }
 };
 
-// exports.getBanksByPincodeAndCategory = async (req, res) => {
-//   try {
-//     const { pincode, companyName, age, monthlyIncome, experienceMonths, bachelorAccommodation, pfDeduction } = req.query;
-
-//     if (!pincode || !companyName || !age || !monthlyIncome || !experienceMonths || pfDeduction === undefined || bachelorAccommodation === undefined) {
-//       return res.status(400).json({ message: "All query parameters are required" });
-//     }
-
-//     // Convert string values to proper data types
-//     const userAge = parseInt(age);
-//     const userMonthlyIncome = parseFloat(monthlyIncome);
-//     const userExperienceMonths = parseInt(experienceMonths);
-//     const userBachelorAccommodation = bachelorAccommodation.toLowerCase() === "yes";
-//     const userPfDeduction = pfDeduction.toLowerCase() === "yes";
-
-//     // ✅ Standardize company name from user input
-//     const standardizedCompanyName = standardizeCompanyName(companyName);
-//     console.log(standardizedCompanyName);
-
-//     // ✅ Fetch all company categories and standardize names
-//     const companyCategories = await CompanyCategory.find().select("bank_id categories").lean();
-
-//     let matchingBankId = null;
-
-//     for (const categoryDoc of companyCategories) {
-//       for (const category of categoryDoc.categories) {
-//         const foundCompany = category.companies.find(company => standardizeCompanyName(company.name) === standardizedCompanyName);
-//         console.log(foundCompany);
-//         if (foundCompany) {
-//           matchingBankId = categoryDoc.bank_id;
-//           break;
-//         }
-//       }
-//       if (matchingBankId) break;
-//     }
-
-//     if (!matchingBankId) {
-//       return res.status(404).json({ message: "Company category not found" });
-//     }
-
-//     // ✅ Fetch banks that provide Pan-India service and match the bank ID
-//     const panIndiaBanks = await Bank.find({ _id: matchingBankId, pan_india_service: true })
-//       .select("bankNames logoUrl")
-//       .lean();
-
-//     // ✅ Fetch banks that specifically serve this pincode and match bank ID
-//     const pincodeBanks = await PincodeService.find({ serviceable_pincodes: pincode, bank_id: matchingBankId })
-//       .populate("bank_id", "bankNames logoUrl")
-//       .lean();
-
-//     // ✅ Extract valid bank details from pincode services
-//     const specificBanks = pincodeBanks.map(service => service.bank_id).filter(bank => bank);
-
-//     // ✅ Merge results and remove duplicates
-//     const allBanks = [...new Map([...panIndiaBanks, ...specificBanks].map(bank => [bank._id.toString(), bank])).values()];
-
-//     // ✅ Check eligibility criteria
-//     const personalLoanCriteria = await PersonalLoan.findOne({ bank_id: matchingBankId }).lean();
-
-//     if (!personalLoanCriteria) {
-//       return res.status(404).json({ message: "Loan criteria not found for the bank" });
-//     }
-
-//     const isEligible =
-//       userAge >= personalLoanCriteria.minAge &&
-//       userAge <= personalLoanCriteria.maxAge &&
-//       userExperienceMonths >= personalLoanCriteria.minExperienceMonths &&
-//       userPfDeduction === personalLoanCriteria.pfDeduction &&
-//       userBachelorAccommodation === personalLoanCriteria.bachelorAccommodationRequired &&
-//       (personalLoanCriteria.categorywiseincome.length > 0
-//         ? personalLoanCriteria.categorywiseincome.some(
-//             (category) => userMonthlyIncome >= category.minimumIncome
-//           )
-//         : userMonthlyIncome >= personalLoanCriteria.minMonthlyIncome);
-
-//     // ✅ Return only bank names and URLs if eligible
-//     if (isEligible) {
-//       return res.status(200).json({ banks: allBanks.map(({ bankNames, logoUrl }) => ({ bankNames, logoUrl })) });
-//     } else {
-//       return res.status(200).json({ banks: [], message: "You are not eligible for a loan from this bank" });
-//     }
-
-//   } catch (error) {
-//     console.error("Error fetching banks:", error);
-//     return res.status(500).json({ message: "Internal Server Error", error: error.message });
-//   }
-// };
-
 
 exports.uploadHomeLoanCriteria = async (req, res) => {
   const filePath = req.file.path;
@@ -844,6 +478,29 @@ exports.uploadHomeLoanCriteria = async (req, res) => {
   }
 };
 
+exports.updateBusinessVintage = async (req, res) => {
+  try {
+      // Step 1: Find all documents where `requiredBusinessVintage` is a string
+      await LoanCriteria.updateMany(
+          { requiredBusinessVintage: { $type: "string" } },
+          [
+              {
+                  $set: {
+                    requiredBusinessVintage: {
+                          $toInt: { $arrayElemAt: [{ $split: ["$requiredBusinessVintage", " "] }, 0] }
+                      }
+                  }
+              }
+          ]
+      );
+
+      res.status(200).json({ message: "Business vintage updated successfully!" });
+  } catch (error) {
+      console.error("Error updating business vintage:", error);
+      res.status(500).json({ message: "Failed to update business vintage", error: error.message });
+  }
+};
+
 exports.uploadBusinessLoanCriteria = async (req, res) => {
   const filePath = req.file?.path;
 
@@ -854,11 +511,10 @@ exports.uploadBusinessLoanCriteria = async (req, res) => {
   try {
     const records = [];
 
-    // Parse the CSV file
     fs.createReadStream(filePath)
       .pipe(csv())
       .on("data", (row) => {
-        records.push(row); // Collect records
+        records.push(row);
       })
       .on("end", async () => {
         try {
@@ -872,124 +528,125 @@ exports.uploadBusinessLoanCriteria = async (req, res) => {
           for (const record of records) {
             try {
               const {
-                bankName,
+                bankNames,
                 minAge,
                 maxAge,
                 requiredBusinessVintage,
                 minAverageBankBalance,
-                allowedEntityTypes,
                 allowedBusinessOperationForms,
+                OperativeBankAccount,
                 requiresITR,
                 minITRYears,
                 requiresAuditedITR,
                 requiresGSTCertificate,
                 requiresGSTReturnsFiling,
-                additionalCriteria,
+                turnover,
+                Ownership,
+                Coapplicant,
+                CoapplicantMinAge,
+                CoapplicantMaxAge,
+                CibilisNegative,
               } = record;
 
               // Validate required fields
-              if (
-                !bankName ||
-                !minAge ||
-                !maxAge ||
-                !requiredBusinessVintage ||
-                !minAverageBankBalance ||
-                !allowedEntityTypes ||
-                !allowedBusinessOperationForms ||
-                requiresITR === undefined ||
-                requiresGSTCertificate === undefined ||
-                requiresGSTReturnsFiling === undefined
-              ) {
-                throw new Error("Missing required fields in record.");
+              const missingFields = [];
+              if (!bankNames) missingFields.push("bankNames");
+              if (!minAge) missingFields.push("minAge");
+              if (!maxAge) missingFields.push("maxAge");
+              if (!requiredBusinessVintage) missingFields.push("requiredBusinessVintage");
+              if (!minAverageBankBalance) missingFields.push("minAverageBankBalance");
+              if (!allowedBusinessOperationForms) missingFields.push("allowedBusinessOperationForms");
+              if (!OperativeBankAccount) missingFields.push("OperativeBankAccount");
+              if (!turnover) missingFields.push("turnover");
+              if (!Ownership) missingFields.push("Ownership");
+              if (!Coapplicant) missingFields.push("Coapplicant");
+              if (!CoapplicantMinAge) missingFields.push("CoapplicantMinAge");
+              if (!CoapplicantMaxAge) missingFields.push("CoapplicantMaxAge");
+              if (!CibilisNegative) missingFields.push("CibilisNegative");
+
+              if (missingFields.length > 0) {
+                throw new Error(`Missing required fields: ${missingFields.join(", ")}`);
               }
 
-              // Convert and validate numeric fields
+              // Convert numeric fields
               const minAgeNum = parseInt(minAge, 10);
               const maxAgeNum = parseInt(maxAge, 10);
               const minAverageBankBalanceNum = parseFloat(minAverageBankBalance);
-              const minITRYearsNum = requiresITR
-                ? parseInt(minITRYears, 10)
-                : null;
+              const turnoverNum = parseFloat(turnover);
+              const CoapplicantMinAgeNum = parseInt(CoapplicantMinAge, 10);
+              const CoapplicantMaxAgeNum = parseInt(CoapplicantMaxAge, 10);
+              const minITRYearsNum = requiresITR ? parseInt(minITRYears, 10) : null;
+              const businessVintageNum = parseInt(requiredBusinessVintage, 10);
 
               if (
-                isNaN(minAgeNum) ||
-                isNaN(maxAgeNum) ||
-                isNaN(minAverageBankBalanceNum)
+                isNaN(minAgeNum) || isNaN(maxAgeNum) || isNaN(minAverageBankBalanceNum) ||
+                isNaN(turnoverNum) || isNaN(CoapplicantMinAgeNum) || isNaN(CoapplicantMaxAgeNum) || isNaN(businessVintageNum)
               ) {
                 throw new Error("Invalid numeric values in record.");
               }
 
-              // Validate minAge and maxAge range
               if (minAgeNum < 18 || maxAgeNum > 70 || minAgeNum > maxAgeNum) {
-                throw new Error(
-                  "Age criteria are invalid. Ensure minAge <= maxAge and within 18-70."
-                );
+                throw new Error("Invalid age range. minAge must be ≤ maxAge and within 18-70.");
               }
 
-              // Convert boolean fields
-              const requiresITRValue = JSON.parse(requiresITR.toLowerCase());
-              const requiresAuditedITRValue = requiresITR
-                ? JSON.parse(requiresAuditedITR.toLowerCase())
-                : null;
-              const requiresGSTCertificateValue = JSON.parse(
-                requiresGSTCertificate.toLowerCase()
-              );
-              const requiresGSTReturnsFilingValue = JSON.parse(
-                requiresGSTReturnsFiling.toLowerCase()
-              );
+              // Convert boolean fields safely
+              const requiresITRValue = requiresITR.toLowerCase() === "true";
+              const requiresAuditedITRValue = requiresAuditedITR.toLowerCase() === "true";
+              const requiresGSTCertificateValue = requiresGSTCertificate.toLowerCase() === "true";
+              const requiresGSTReturnsFilingValue = requiresGSTReturnsFiling.toLowerCase() === "true";
+              const CibilisNegativeValue = CibilisNegative.toLowerCase() === "true";
+              const requiresCoApplicant = Coapplicant.toLowerCase() === "true";
 
-              // Ensure boolean values are valid
-              if (
-                typeof requiresITRValue !== "boolean" ||
-                (requiresITR &&
-                  typeof requiresAuditedITRValue !== "boolean") ||
-                typeof requiresGSTCertificateValue !== "boolean" ||
-                typeof requiresGSTReturnsFilingValue !== "boolean"
-              ) {
-                throw new Error("Invalid boolean values in record.");
-              }
+              // Convert string fields to arrays
+              const operativeBankAccounts = OperativeBankAccount.replace(/"/g, "").trim().split(/\s*,\s*/);
+              const ownershipList = Ownership.replace(/"/g, "").trim().split(/\s*,\s*/);;
+              const allowedBusinessFormsList = allowedBusinessOperationForms.replace(/"/g, "").trim().split(/\s*,\s*/);;
 
               // Check if the bank exists, or create a new one
-              let bank = await Bank.findOne({ bankName });
+              let bank = await Bank.findOne({ bankNames });
 
               if (!bank) {
-                console.log(`Bank not found: ${bankName}. Creating new bank.`);
-                bank = new Bank({ bankName });
+                console.log(`Bank not found: ${bankNames}. Creating new bank.`);
+                bank = new Bank({ bankNames });
                 await bank.save();
               }
 
               // Prepare the record for insertion
               validRecords.push({
-                bank_id: bank._id, // Link to the Bank entity
-                bankName,
+                bank_id: bank._id,
+                bankNames,
                 minAge: minAgeNum,
                 maxAge: maxAgeNum,
-                requiredBusinessVintage,
+                requiredBusinessVintage: businessVintageNum,
                 minAverageBankBalance: minAverageBankBalanceNum,
-                allowedEntityTypes: allowedEntityTypes.split(","),
-                allowedBusinessOperationForms:
-                  allowedBusinessOperationForms.split(","),
+                allowedBusinessOperationForms: allowedBusinessFormsList,
+                OperativeBankAccount: operativeBankAccounts,
                 requiresITR: requiresITRValue,
                 minITRYears: minITRYearsNum,
                 requiresAuditedITR: requiresAuditedITRValue,
                 requiresGSTCertificate: requiresGSTCertificateValue,
                 requiresGSTReturnsFiling: requiresGSTReturnsFilingValue,
-                additionalCriteria,
+                turnover: turnoverNum,
+                Ownership: ownershipList,
+                Coapplicant: requiresCoApplicant,
+                CoapplicantMinAge: CoapplicantMinAgeNum,
+                CoapplicantMaxAge: CoapplicantMaxAgeNum,
+                CibilisNegative: CibilisNegativeValue,
               });
+
             } catch (err) {
               errors.push({ record, error: err.message });
             }
           }
 
-          // Insert valid records into the database
+          // Insert valid records
           if (validRecords.length > 0) {
+            console.log(validRecords);
             await Business.insertMany(validRecords);
           }
 
-          // Delete the uploaded file after processing
-          fs.unlinkSync(filePath);
+          fs.unlinkSync(filePath); // Cleanup file
 
-          // Send response
           res.status(201).json({
             message: "Business loan criteria uploaded successfully.",
             recordsUploaded: validRecords.length,
@@ -1009,4 +666,119 @@ exports.uploadBusinessLoanCriteria = async (req, res) => {
     res.status(500).json({ error: "Error processing CSV file." });
   }
 };
+
+exports.checkBusinessLoanEligibility = async (req, res) => {
+  try {
+    const {
+      age,
+      businessVintage,
+      businessOperationForm,
+      averageBankBalance,
+      operativeBankAccount,
+      ITR,
+      ITRYears,
+      auditedITR,
+      GSTCertificate,
+      GSTReturnsFiling,
+      turnover,
+      ownership,
+      coapplicant,
+      coapplicantAge,
+      cibilNegative,
+    } = req.query;
+
+    // Convert values to appropriate types
+    const ageNum = age ? parseInt(age, 10) : NaN;
+    const businessVintageNum = businessVintage ? parseInt(businessVintage, 10) : NaN;
+    const averageBankBalanceNum = averageBankBalance ? parseFloat(averageBankBalance) : NaN;
+    const turnoverNum = turnover ? parseFloat(turnover) : NaN;
+    const coapplicantAgeNum = coapplicantAge ? parseInt(coapplicantAge, 10) : NaN;
+    const ITRYearsNum = ITRYears ? parseInt(ITRYears, 10) : null;
+
+    // Validate numeric fields
+    if (
+      isNaN(ageNum) || isNaN(businessVintageNum) ||
+      isNaN(averageBankBalanceNum) || isNaN(turnoverNum) || 
+      (coapplicant && isNaN(coapplicantAgeNum))
+    ) {
+      return res.status(400).json({ error: "Invalid numeric values in request." });
+    }
+
+    // Validate age constraints
+    if (ageNum < 18 || ageNum > 70) return res.status(400).json({ error: "Age must be between 18 and 70." });
+    if (coapplicant && (coapplicantAgeNum < 18 || coapplicantAgeNum > 70)) {
+      return res.status(400).json({ error: "Co-applicant age must be between 18 and 70." });
+    }
+
+    // Convert boolean values safely
+    const ITRValue = ITR?.toLowerCase() === "true";
+    const auditedITRValue = auditedITR?.toLowerCase() === "true";
+    const GSTCertificateValue = GSTCertificate?.toLowerCase() === "true";
+    const GSTReturnsFilingValue = GSTReturnsFiling?.toLowerCase() === "true";
+    const cibilNegativeValue = cibilNegative?.toLowerCase() === "true";
+    const coapplicantValue = coapplicant?.toLowerCase() === "true";
+
+    // Convert string inputs to arrays for querying
+    const businessOperationForms = businessOperationForm
+      ? businessOperationForm.split(",").map(s => s.trim())
+      : [];
+
+    const ownershipTypes = ownership
+      ? ownership.split(",").map(s => s.trim())
+      : [];
+
+    const operativeBankAccounts = Array.isArray(operativeBankAccount)
+      ? operativeBankAccount
+      : operativeBankAccount ? [operativeBankAccount] : [];
+
+    // Build MongoDB query object
+    const eligibilityQuery = {
+      minAge: { $lte: ageNum },
+      maxAge: { $gte: ageNum },
+       requiredBusinessVintage: { $lte: businessVintageNum },
+       minAverageBankBalance: { $gte: averageBankBalanceNum },
+      allowedBusinessOperationForms: { $in: businessOperationForms },
+      OperativeBankAccount: { $in: operativeBankAccounts },
+      requiresITR: ITRValue,
+      minITRYears: ITRYearsNum ? { $lte: ITRYearsNum } : { $exists: false },
+      requiresAuditedITR: ITRValue ? auditedITRValue : { $exists: false },
+      requiresGSTCertificate: GSTCertificateValue,
+      requiresGSTReturnsFiling: GSTReturnsFilingValue,
+      turnover: { $gte: turnoverNum },
+     Ownership: { $in: ownershipTypes },
+      Coapplicant: coapplicantValue ? true : { $exists: false },
+      CoapplicantMinAge: coapplicantValue ? { $lte: coapplicantAgeNum } : { $exists: false },
+      CoapplicantMaxAge: coapplicantValue ? { $gte: coapplicantAgeNum } : { $exists: false },
+      CibilisNegative: cibilNegativeValue ? true : { $exists: false },
+    };
+
+   
+
+    // Fetch eligible banks
+    const eligibleBanks = await Business.find(eligibilityQuery).populate("bank_id", "bankNames logoUrl");
+
+    if (!eligibleBanks.length) {
+      return res.status(404).json({ message: "No banks found matching the criteria." });
+    }
+
+
+    // Format response
+    const banksList = eligibleBanks.map(record => ({
+      bankName: record.bank_id?.bankNames || "Unknown",
+      logoUrl: record.bank_id?.logoUrl || "",
+     
+    }));
+
+    res.status(200).json({
+      message: "Eligible banks found.",
+      banks: banksList,
+    });
+
+  } catch (error) {
+    console.error("Error checking business loan eligibility:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
 
