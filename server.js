@@ -1,6 +1,5 @@
 const express = require('express');
 const multer = require("multer");
-const csv = require("csv-parser");
 const fs = require("fs");
 
 
@@ -25,7 +24,7 @@ const connectMongoDB = require("./config/db");
 const bodyParser = require('body-parser');
 const app = express();
 const cors = require('cors');
-app.use(cors({ origin: 'https://app.flutterflow.io' }));
+app.use(cors({ origin:  'https://ff-debug-service-frontend-pro-ygxkweukma-uc.a.run.app'}));
 
 app.use(bodyParser.json());
 connectMongoDB();

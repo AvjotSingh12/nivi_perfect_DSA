@@ -321,6 +321,14 @@ exports.getBanksByPincodeAndCategory = async (req, res) => {
       "6 months-1Year": 6,
       "1+ Year": 12
     };
+    console.log("Pincode:", pincode," ", typeof(pincode));
+    console.log("Company Name:", " ",companyName, typeof(companyName));
+    console.log("User Age:", age," ",typeof(age));
+    console.log("User Monthly Income:", monthlyIncome," ", typeof(monthlyIncome));
+    console.log("User Experience Months:", experienceMonths, " ",typeof(experienceMonths));
+    console.log("User Bachelor Accommodation:", bachelorAccommodation," ", typeof(bachelorAccommodation));
+    console.log("User PF Deduction:", pfDeduction," ", typeof(pfDeduction));
+    
     
     const userAge = parseInt(age);
     const userMonthlyIncome = parseFloat(monthlyIncome);
@@ -328,13 +336,6 @@ exports.getBanksByPincodeAndCategory = async (req, res) => {
     const userBachelorAccommodation = bachelorAccommodation.toLowerCase() === "yes";
     const userPfDeduction = pfDeduction.toLowerCase() === "yes";
 
-    console.log("Pincode:", pincode);
-    console.log("Company Name:", companyName);
-    console.log("User Age:", userAge);
-    console.log("User Monthly Income:", userMonthlyIncome);
-    console.log("User Experience Months:", userExperienceMonths);
-    console.log("User Bachelor Accommodation:", userBachelorAccommodation);
-    console.log("User PF Deduction:", userPfDeduction);
     
 
     const panIndiaBanks = await Bank.find({ pan_india_service: true })
