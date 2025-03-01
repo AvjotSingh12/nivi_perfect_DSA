@@ -420,9 +420,9 @@ exports.getBanksByPincodeAndCategory = async (req, res) => {
         const bankDetails = allBanks.find(bank => bank._id.toString() === bankId);
         if (bankDetails) {
           console.log("found banks:", bankDetails.bankNames);
-          const formattedUrl = decodeURIComponent(bankDetails.logoUrl);
+         
 
-          eligibleBanks.push({ bankNames: bankDetails.bankNames, logoUrl: formattedUrl });
+          eligibleBanks.push({ bankNames: bankDetails.bankNames, logoUrl: bankDetails.logoUrl });
         }
       }
     }
