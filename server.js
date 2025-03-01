@@ -24,7 +24,26 @@ const connectMongoDB = require("./config/db");
 const bodyParser = require('body-parser');
 const app = express();
 const cors = require('cors');
-app.use(cors({ origin:  'https://ff-debug-service-frontend-pro-ygxkweukma-uc.a.run.app'}));
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'https://app.flutterflow.io',
+      'https://ff-debug-service-frontend-pro-ygxkweukma-uc.a.run.app'
+    ];
+    
+    if (!origin || allowedOrigins.includes(origin) || origin.startsWith('capacitor://') || origin.startsWith('http://localhost')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: 'GET, POST, PUT, DELETE, OPTIONS',
+  allowedHeaders: 'Content-Type, Authorization',
+  credentials: true, // Allow cookies and credentials if needed
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
 
 app.use(bodyParser.json());
 connectMongoDB();
