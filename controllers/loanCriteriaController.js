@@ -710,7 +710,7 @@ exports.checkBusinessLoanEligibility = async (req, res) => {
 
     // Validate numeric fields
     if (
-      isNaN(ageNum) || isNaN(businessVintageNum) ||
+      isNaN(ageNum)  ||
       isNaN(averageBankBalanceNum) || isNaN(turnoverNum) || 
       (coapplicant && isNaN(coapplicantAgeNum))
     ) {
@@ -724,12 +724,12 @@ exports.checkBusinessLoanEligibility = async (req, res) => {
     }
 
     // Convert boolean values safely
-    const ITRValue = ITR?.toLowerCase() === "true";
-    const auditedITRValue = auditedITR?.toLowerCase() === "true";
-    const GSTCertificateValue = GSTCertificate?.toLowerCase() === "true";
-    const GSTReturnsFilingValue = GSTReturnsFiling?.toLowerCase() === "true";
-    const cibilNegativeValue = cibilNegative?.toLowerCase() === "true";
-    const coapplicantValue = coapplicant?.toLowerCase() === "true";
+    const ITRValue = ITR?.toLowerCase() === "yes";
+    const auditedITRValue = auditedITR?.toLowerCase() === "yes";
+    const GSTCertificateValue = GSTCertificate?.toLowerCase() === "yes";
+    const GSTReturnsFilingValue = GSTReturnsFiling?.toLowerCase() === "yes";
+    const cibilNegativeValue = cibilNegative?.toLowerCase() === "yes";
+    const coapplicantValue = coapplicant?.toLowerCase() === "yes";
 
     // Convert string inputs to arrays for querying
     const businessOperationForms = businessOperationForm
