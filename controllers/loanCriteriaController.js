@@ -690,9 +690,19 @@ exports.checkBusinessLoanEligibility = async (req, res) => {
       cibilNegative,
     } = req.query;
 
+    const durationMapping = {
+      "1 Month - 6 Month": 6,
+      "6 Month - 9 Month": 9,
+      "9 Month - 1 Year": 12,
+      "1 Year - 2 Year": 24,
+      "2 Year - 3 Year": 36,
+      "3 Year - 5 Year": 60,
+      "5 Year+": 999
+  };
+  
+
     // Convert values to appropriate types
     const ageNum = age ? parseInt(age, 10) : NaN;
-    const businessVintageNum = businessVintage ? parseInt(businessVintage, 10) : NaN;
     const averageBankBalanceNum = averageBankBalance ? parseFloat(averageBankBalance) : NaN;
     const turnoverNum = turnover ? parseFloat(turnover) : NaN;
     const coapplicantAgeNum = coapplicantAge ? parseInt(coapplicantAge, 10) : NaN;
@@ -733,6 +743,11 @@ exports.checkBusinessLoanEligibility = async (req, res) => {
     const operativeBankAccounts = Array.isArray(operativeBankAccount)
       ? operativeBankAccount
       : operativeBankAccount ? [operativeBankAccount] : [];
+
+      const businessVintageNum = durationMapping[businessVintage] || NaN;
+      if (isNaN(businessVintageNum)) {
+        return res.status(400).json({ error: "Invalid business vintage value." });
+      }
 
     // Build MongoDB query object
     const eligibilityQuery = {
