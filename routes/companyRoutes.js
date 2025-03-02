@@ -1,7 +1,7 @@
 // routes/pincodeRoutes.js
 const express = require("express");
 const router = express.Router();
-const { checkCompanyCat, autoCompleteCompany } = require("../controllers/companyController"); // Import the controller function
+const { checkCompanyCat, autocompleteCompanies, CreateIndex } = require("../controllers/companyController"); // Import the controller function
 
 // companyCategoryRoutes.js
 const multer = require("multer");
@@ -15,6 +15,7 @@ const { uploadCompanyCategories } = require('../controllers/companyController');
 // Define the route
 router.post('/uploadCompanies',upload.single("file"), uploadCompanyCategories); 
 router.get("/checkCompanyCat", checkCompanyCat);
-router.get("/autocompleteCompany", autoCompleteCompany);
+router.get("/autocompleteCompany", autocompleteCompanies);
+router.get("/createAnIndex",  CreateIndex)
 
 module.exports = router;

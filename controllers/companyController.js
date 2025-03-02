@@ -96,8 +96,6 @@ const uploadCompanyCategories = async (req, res) => {
 };
 
 
-module.exports = { uploadCompanyCategories };
-  
 const checkCompanyCat  = async (req, res) => {
     const inputCompany = req.query.Company; // Get the company name from query parameters
 
@@ -150,59 +148,68 @@ const checkCompanyCat  = async (req, res) => {
 
 
 }
+const autocompleteCompanies = async (req, res) => {
+  try {
+    console.log("🔍 API Hit: /api/autocompleteCompany");
 
-const autoCompleteCompany = async (req, res) => {
-    const userInput = req.query.query; // Get user input (company name prefix)
+    const userInput = req.query.userInput || ""; // Default to empty string for all companies
+    console.log("📝 userInput:", userInput);
 
-    if (!userInput) {
-        return res.status(400).json({ error: 'Company name prefix is required' });
-    }
-
-    try {
-        // Query MongoDB to find matching full company names
-        const matchingCompanies = await CompanyCategory.aggregate([
-            { $unwind: "$categories" }, // Expand categories array
-            { $unwind: "$categories.companies" }, // Expand companies array
-            {
-                $match: {
-                    "categories.companies.name": { 
-                        $regex: `^${userInput}`, // Match prefix case-insensitively
-                        $options: "i"
-                    }
-                }
-            },
-            {
-                $project: {
-                    _id: 0,
-                    company: {
-                        $trim: { input: "$categories.companies.name", chars: "\"" } // Remove unwanted quotes
-                    }
-                }
-            }
-        ]);
-
-        // Ensure full company names are returned
-        const formattedCompanies = matchingCompanies.map(item => ({
-            company: item.company.trim() // Trim any extra spaces
-        }));
-
-        // Respond with matching companies
-        if (formattedCompanies.length > 0) {
-            return res.json({ message: 'Companies found', companies: formattedCompanies });
-        } else {
-            return res.json({ message: 'No companies found for this prefix. Add a new company for this prefix.' });
+    const companies = await CompanyCategory.aggregate([
+      { $unwind: "$categories" },
+      { $unwind: "$categories.companies" },
+      {
+        $match: {
+          "categories.companies.name": { 
+            $regex: userInput, // Matches all if userInput is empty
+            $options: "i" 
+          }
         }
-    } catch (error) {
-        console.error('Error fetching data from MongoDB:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
+      },
+      {
+        $group: {
+          _id: "$categories.companies.name",
+          company: { $first: "$categories.companies.name" }
+        }
+      },
+      { $sort: { company: 1 } }, // Sort alphabetically
+      {
+        $project: {
+          _id: 0,
+          company: 1
+        }
+      }
+    ]);
+
+    console.log("✅ Companies Fetched:", companies.length);
+
+    res.json({ companies });
+  } catch (error) {
+    console.error("❌ Error fetching autocomplete:", error);
+    res.status(500).json({ error: "Failed to fetch autocomplete results" });
+  }
 };
 
-module.exports = { autoCompleteCompany };
 
 
+
+const CreateIndex = async (req, res)=>{
+  try {
+    await  CompanyCategory.collection.createIndex(
+      { "categories.companies.name": 1 },
+      { collation: { locale: "en", strength: 2 } }
+    );
+    res.json({ message: "Index created successfully!" });
+  } catch (error) {
+    console.error("Error creating index:", error);
+    res.status(500).json({ error: "Index creation failed" });
+  }
+
+}
 module.exports = {
+  CreateIndex,
+  autocompleteCompanies,
+  uploadCompanyCategories,
     checkCompanyCat,
-    autoCompleteCompany,
-    uploadCompanyCategories
+    autocompleteCompanies,
 };
