@@ -304,7 +304,6 @@ const standardizeCompanyName = (name) => {
       .toUpperCase();        // Convert to uppercase
 };
 
-
 exports.getBanksByPincodeAndCategory = async (req, res) => {
   try {
     const { pincode, companyName, age, monthlyIncome, experienceMonths, bachelorAccommodation, pfDeduction } = req.query;
@@ -321,67 +320,39 @@ exports.getBanksByPincodeAndCategory = async (req, res) => {
       "6 months-1Year": 6,
       "1+ Year": 12
     };
-    console.log("Pincode:", pincode," ", typeof(pincode));
-    console.log("Company Name:", " ",companyName, typeof(companyName));
-    console.log("User Age:", age," ",typeof(age));
-    console.log("User Monthly Income:", monthlyIncome," ", typeof(monthlyIncome));
-    console.log("User Experience Months:", experienceMonths, " ",typeof(experienceMonths));
-    console.log("User Bachelor Accommodation:", bachelorAccommodation," ", typeof(bachelorAccommodation));
-    console.log("User PF Deduction:", pfDeduction," ", typeof(pfDeduction));
-    
-    
+
     const userAge = parseInt(age);
     const userMonthlyIncome = parseFloat(monthlyIncome);
-    const userExperienceMonths = experienceMapping[experienceMonths] ?? parseInt(experienceMonths);    
+    const userExperienceMonths = experienceMapping[experienceMonths] ?? parseInt(experienceMonths);
     const userBachelorAccommodation = bachelorAccommodation.toLowerCase() === "yes";
     const userPfDeduction = pfDeduction.toLowerCase() === "yes";
 
-    
+    const panIndiaBanks = await Bank.find({ pan_india_service: true }).select("bankNames logoUrl").lean();
 
-    const panIndiaBanks = await Bank.find({ pan_india_service: true })
-    .select("bankNames logoUrl")
-    .lean();
-  
+    const pincodeBanks = await PincodeService.find({ serviceable_pincodes: { $in: [pincode] } })
+      .populate("bank_id", "bankNames logoUrl")
+      .lean();
 
-    // ✅ Fetch banks that specifically serve this pincode and match bank ID
-    const pincodeBanks = await PincodeService.find({
-      serviceable_pincodes: { $in: [pincode] } // Ensures it checks within an array
-    })
-    .populate("bank_id", "bankNames logoUrl")
-    .lean();
-    
-
-    // ✅ Extract valid bank details from pincode services
     const specificBanks = pincodeBanks
-    .map(service => service.bank_id)
-    .filter(bank => bank !== null && bank !== undefined);
-  
+      .map(service => service.bank_id)
+      .filter(bank => bank !== null && bank !== undefined);
 
-    // ✅ Merge results and remove duplicates
-    const allBanks = [
-      ...new Map(
-        [...panIndiaBanks, ...specificBanks].map(bank => [bank?._id?.toString(), bank])
-      ).values()
-    ];
-    
+    const allBanks = [...new Map([...panIndiaBanks, ...specificBanks].map(bank => [bank?._id?.toString(), bank])).values()];
 
-    // ✅ Standardize company name from user input
     const standardizedCompanyName = standardizeCompanyName(companyName);
-   
 
-    // ✅ Fetch all company categories and standardize names
-    const companyCategories = await CompanyCategory.find({
-      bank_id: { $in: allBanks.map(bank => bank._id) } // Filter only those banks present in allBanks
-    }).select("bank_id categories").lean();
-    
-    const matchingBankIds = new Set(); // Store multiple IDs
+    const companyCategories = await CompanyCategory.find({ bank_id: { $in: allBanks.map(bank => bank._id) } })
+      .select("bank_id categories")
+      .lean();
+
+    const matchingBankIds = new Set();
 
     for (const categoryDoc of companyCategories) {
       if (!categoryDoc.categories) continue;
-    
+
       for (const category of categoryDoc.categories) {
         if (!category.companies || !Array.isArray(category.companies)) continue;
-    
+
         for (const company of category.companies) {
           if (standardizeCompanyName(company.name) === standardizedCompanyName) {
             matchingBankIds.add(categoryDoc.bank_id.toString());
@@ -389,39 +360,30 @@ exports.getBanksByPincodeAndCategory = async (req, res) => {
         }
       }
     }
-    
+
     if (matchingBankIds.size === 0) {
       return res.status(404).json({ message: "Company category not found" });
     }
-     
-    console.log("bank ids" , matchingBankIds);
- 
+
     const eligibleBanks = [];
 
-    // Check loan criteria for each bank in the set
     for (const bankId of matchingBankIds) {
       const personalLoanCriteria = await PersonalLoan.findOne({ bank_id: bankId }).lean();
+      if (!personalLoanCriteria) continue;
 
-      if (!personalLoanCriteria) continue; // Skip if no criteria found
-
-      // Check eligibility
       const isEligible =
         userAge >= personalLoanCriteria.minAge &&
         userAge <= personalLoanCriteria.maxAge &&
         userExperienceMonths >= personalLoanCriteria.minExperienceMonths &&
         userPfDeduction === personalLoanCriteria.pfDeduction &&
-        userBachelorAccommodation === personalLoanCriteria.bachelorAccommodationRequired &&
+        (personalLoanCriteria.bachelorAccommodationRequired || userBachelorAccommodation) &&
         (personalLoanCriteria.categorywiseincome.length > 0
           ? personalLoanCriteria.categorywiseincome.some(category => userMonthlyIncome >= category.minimumIncome)
           : userMonthlyIncome >= personalLoanCriteria.minMonthlyIncome);
 
       if (isEligible) {
-        // Find the bank details
         const bankDetails = allBanks.find(bank => bank._id.toString() === bankId);
         if (bankDetails) {
-          console.log("found banks:", bankDetails.bankNames);
-         
-
           eligibleBanks.push({ bankNames: bankDetails.bankNames, logoUrl: bankDetails.logoUrl });
         }
       }
@@ -749,27 +711,28 @@ exports.checkBusinessLoanEligibility = async (req, res) => {
         return res.status(400).json({ error: "Invalid business vintage value." });
       }
 
-    // Build MongoDB query object
-    const eligibilityQuery = {
-      minAge: { $lte: ageNum },
-      maxAge: { $gte: ageNum },
-       requiredBusinessVintage: { $lte: businessVintageNum },
-       minAverageBankBalance: { $gte: averageBankBalanceNum },
-      allowedBusinessOperationForms: { $in: businessOperationForms },
-      OperativeBankAccount: { $in: operativeBankAccounts },
-      requiresITR: ITRValue,
-      minITRYears: ITRYearsNum ? { $lte: ITRYearsNum } : { $exists: false },
-      requiresAuditedITR: ITRValue ? auditedITRValue : { $exists: false },
-      requiresGSTCertificate: GSTCertificateValue,
-      requiresGSTReturnsFiling: GSTReturnsFilingValue,
-      turnover: { $gte: turnoverNum },
-     Ownership: { $in: ownershipTypes },
-      Coapplicant: coapplicantValue ? true : { $exists: false },
-      CoapplicantMinAge: coapplicantValue ? { $lte: coapplicantAgeNum } : { $exists: false },
-      CoapplicantMaxAge: coapplicantValue ? { $gte: coapplicantAgeNum } : { $exists: false },
-      CibilisNegative: cibilNegativeValue ? true : { $exists: false },
-    };
-
+      const eligibilityQuery = {
+        minAge: { $lte: ageNum },
+         maxAge: { $gte: ageNum },
+         requiredBusinessVintage: { $lte: businessVintageNum },
+         minAverageBankBalance: { $lte: averageBankBalanceNum }, // Fix: should be less than or equal to  
+         allowedBusinessOperationForms: { $in: businessOperationForms },
+         OperativeBankAccount: { $in: operativeBankAccounts },
+         requiresITR: ITRValue ? true : { $exists: true },
+         minITRYears: ITRYearsNum !== null ? { $lte: ITRYearsNum } : { $exists: false },
+         requiresAuditedITR: auditedITRValue ? true : { $exists: true },
+        requiresGSTCertificate: GSTCertificateValue ? true : { $exists: false },
+        requiresGSTReturnsFiling: GSTReturnsFilingValue ? true : { $exists: false },
+         turnover: { $gte: turnoverNum },
+         Ownership: { $in: ownershipTypes },
+         Coapplicant: coapplicantValue ? true : false, // Fix: direct boolean check  
+         ...(coapplicantValue && {
+          CoapplicantMinAge: { $lte: coapplicantAgeNum },
+           CoapplicantMaxAge: { $gte: coapplicantAgeNum },
+         }),
+         ...(cibilNegativeValue !== undefined && { CibilisNegative: cibilNegativeValue }),
+      };
+      
    
 
     // Fetch eligible banks

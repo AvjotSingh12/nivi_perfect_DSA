@@ -172,14 +172,15 @@ const autocompleteCompanies = async (req, res) => {
           company: { $first: "$categories.companies.name" }
         }
       },
-      { $sort: { company: 1 } }, // Sort alphabetically
+      { $sort: { company: 1 } }, 
+      { $limit: 100 }, // Sort alphabetically
       {
         $project: {
           _id: 0,
           company: 1
         }
       }
-    ]);
+    ]).allowDiskUse(true);;
 
     console.log("✅ Companies Fetched:", companies.length);
 
@@ -190,24 +191,55 @@ const autocompleteCompanies = async (req, res) => {
   }
 };
 
-
-
-
-const CreateIndex = async (req, res)=>{
+const cleanCompanyNames = async (req, res) => {
   try {
-    await  CompanyCategory.collection.createIndex(
-      { "categories.companies.name": 1 },
-      { collation: { locale: "en", strength: 2 } }
+    await CompanyCategory.updateMany(
+      {},
+      [
+        {
+          $set: {
+            categories: {
+              $map: {
+                input: "$categories",
+                as: "category",
+                in: {
+                  categoryName: "$$category.categoryName",
+                  minimumSalary: "$$category.minimumSalary",
+                  companies: {
+                    $map: {
+                      input: "$$category.companies",
+                      as: "company",
+                      in: {
+                        name: {
+                          $trim: {
+                            input: {
+                              $replaceAll: { input: "$$company.name", find: "\"", replacement: "" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
     );
-    res.json({ message: "Index created successfully!" });
-  } catch (error) {
-    console.error("Error creating index:", error);
-    res.status(500).json({ error: "Index creation failed" });
-  }
 
-}
+    res.json({ message: "Company names cleaned successfully!" });
+  } catch (error) {
+    console.error("Error cleaning company names:", error);
+    res.status(500).json({ error: "Cleaning failed" });
+  }
+};
+
+
+
+
 module.exports = {
-  CreateIndex,
+  cleanCompanyNames,
   autocompleteCompanies,
   uploadCompanyCategories,
     checkCompanyCat,
