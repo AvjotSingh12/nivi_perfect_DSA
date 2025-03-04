@@ -96,58 +96,58 @@ const uploadCompanyCategories = async (req, res) => {
 };
 
 
-const checkCompanyCat  = async (req, res) => {
-    const inputCompany = req.query.Company; // Get the company name from query parameters
+const checkCompanyCat = async (req, res) => {
+  try {
+    const { companyName } = req.query;
 
-    if (!inputCompany) {
-        return res.status(400).json({ error: 'Company is required' });
+    if (!companyName) {
+      return res.status(400).json({ message: "Company name is required!" });
     }
 
-    try {
-        const banksSnapshot = await db.collection('company_categories').get();
-        let matchingCategories = [];
+    // Fetch only 2 relevant bank records for debugging
+    const results = await CompanyCategory.find(
+      { "categories.companies.name": companyName.trim() },
+      {
+        _id: 0,
+        bank_id: 1,
+        categories: 1,
+      }
+    ); // Limit query to 2 entries
 
-        // Loop through each category document
-        for (const doc of banksSnapshot.docs) {
-            const listSnapshot = await doc.ref.collection('company_list').get(); // Get the sub-collection `company_list`
-
-            // Loop through each chunk in the `company_list` sub-collection
-            for (const chunkDoc of listSnapshot.docs) {
-                const chunkData = chunkDoc.data().companies; // Get the companies list
-
-                if (chunkData) {
-                    // Convert the string into an array of company names
-                    const companyArray = chunkData
-                        .replace(/"/g, '') // Remove all double quotes
-                        .split(',')        // Split by commas
-                        .map(c => c.trim()); // Trim whitespace around each company name
-
-                    // Check if the input company exists in the array
-                    if (companyArray.includes(inputCompany)) {
-                      let inputString = chunkDoc.id;
-                      let trimmedString = inputString.split('_')[0] + ' ' + inputString.split('_')[1];
-                        matchingCategories.push({
-                            bank: doc.id,         // Category document ID
-                            category: trimmedString // Chunk document ID
-                        });
-                    }
-                }
-            }
-        }
-
-        // Respond with matching categories or a message if no match is found
-        if (matchingCategories.length > 0) {
-            return res.json({ message: 'Company found in categories', categories: matchingCategories });
-        } else {
-            return res.json({ message: 'No category found for this company. Add the company to a category.' });
-        }
-    } catch (error) {
-        console.error('Error fetching data from Firestore:', error);
-        return res.status(500).json({ error: 'Internal server error' });
+    if (results.length === 0) {
+      return res.status(404).json({ message: "No records found for this company." });
     }
 
+    // Fetch bank names using `Promise.all` to handle async operations
+    const response = await Promise.all(
+      results.map(async (result) => {
+        const bank = await Bank.findById(result.bank_id, { _id: 0, bankNames: 1 });
 
-}
+        const category = result.categories.find(
+          (cat) =>
+            Array.isArray(cat.companies) &&
+            cat.companies.some(
+              (c) => c.name.trim().toLowerCase() === companyName.trim().toLowerCase()
+            )
+        );
+
+        return {
+          bank: bank ? bank.bankNames : "Unknown Bank",
+          category: category ? category.categoryName : "Unknown Category",
+        };
+      })
+    );
+
+  
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Error fetching bank names and categories:", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};
+
+
+
 const autocompleteCompanies = async (req, res) => {
   try {
     console.log("🔍 API Hit: /api/autocompleteCompany");
@@ -190,6 +190,24 @@ const autocompleteCompanies = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch autocomplete results" });
   }
 };
+
+
+const createIndex = async (req, res) => {
+  try {
+    await CompanyCategory.collection.createIndex({
+      bankName: 1,
+      "categories.categoryName": 1,
+      "categories.companies.name": 1
+    });
+
+    res.status(200).json({ message: "Index created successfully!" });
+  } catch (error) {
+    console.error("Error creating index:", error);
+    res.status(500).json({ message: "Failed to create index", error });
+  }
+}
+
+
 
 const cleanCompanyNames = async (req, res) => {
   try {
@@ -240,6 +258,7 @@ const cleanCompanyNames = async (req, res) => {
 
 module.exports = {
   cleanCompanyNames,
+  createIndex,
   autocompleteCompanies,
   uploadCompanyCategories,
     checkCompanyCat,
