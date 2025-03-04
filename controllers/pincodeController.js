@@ -100,107 +100,47 @@ const uploadPincodes = async (req, res) => {
 };
 
 
-// const uploadPincodes = async (req, res) => {
-//   try {
-//     if (!req.file || !req.file.path) {
-//       return res.status(400).json({ message: "No file uploaded" });
-//     }
+const checkPincode = async (req, res) => {
+  const userPincode = req.query.pincode; // Get the pincode from query parameters
 
-//     const filePath = req.file.path; // Path to the uploaded Excel file
+  if (!userPincode) {
+    return res.status(400).json({ error: "Pincode is required" });
+  }
 
-//     // Read the Excel file
-//     const workbook = xlsx.readFile(filePath);
-//     const sheetName = workbook.SheetNames[0]; // Get the first sheet
-//     const sheetData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]); // Convert to JSON
+  try {
+    // Fetch banks that offer pan-India services
+    const panIndiaBanks = await Bank.find({ pan_india_service: true })
+      .select("_id bankNames logoUrl")
+      .lean();
 
-//     for (const entry of sheetData) {
-//       const bankName = entry["BANK NAME"]?.trim(); // Ensure proper column name
-//       const pincodesRaw = entry["PINCODE"]?.toString().trim(); // Convert to string
+    // Fetch banks that specifically serve the given pincode
+    const pincodeBanks = await Pincode.find({
+      serviceable_pincodes: { $in: [userPincode] },
+    })
+      .select("_id bankNames logoUrl")
+      .lean();
 
-//       if (!bankName || !pincodesRaw) {
-//         console.log(`Skipping row with missing data: ${JSON.stringify(entry)}`);
-//         continue;
-//       }
+    // Merge both lists of banks
+    let matchingBanks = [...panIndiaBanks, ...pincodeBanks];
 
-//       const pincodeArray = pincodesRaw.split(",").map((code) => code.trim());
+    // Filter out banks that are missing any required field
+    matchingBanks = matchingBanks.filter(
+      (bank) => bank._id && bank.bankNames && bank.logoUrl
+    );
 
-//       let bank = await Bank.findOne({ bankNames: bankName });
-
-//       if (!bank) {
-//         console.log(`Bank not found: ${bankName}. Creating a new bank entry.`);
-
-//         bank = await Bank.create({ bankNames: bankName });
-//       }
-
-//       // Ensure Pincode entry exists for this bank
-//       let pincodeEntry = await Pincode.findOne({ bank_id: bank._id });
-
-//       if (!pincodeEntry) {
-//         // If no entry exists, create a new one
-//         await Pincode.create({
-//           bank_id: bank._id,
-//           serviceable_pincodes: pincodeArray,
-//         });
-//       } else {
-//         // Add only new pincodes to the existing list
-//         await Pincode.updateOne(
-//           { bank_id: bank._id },
-//           { $addToSet: { serviceable_pincodes: { $each: pincodeArray } } }
-//         );
-//       }
-//     }
-
-//     fs.unlinkSync(filePath); // Delete the uploaded file
-
-//     res.status(201).json({ message: "Excel data uploaded successfully!" });
-//   } catch (error) {
-//     console.error("Error processing file:", error);
-//     res.status(500).json({ message: error.message });
-//   }
-// };
-
-
-module.exports = uploadPincodes;
-
-const checkPincode= async (req, res) => {
-    const userPincode = req.query.pincode; // Get the pincode from query parameters
-
-    if (!userPincode) {
-        return res.status(400).json({ error: 'Pincode is required' });
+    // Respond with matching banks or an appropriate message
+    if (matchingBanks.length > 0) {
+      return res.json({ message: "Banks found", banks: matchingBanks });
+    } else {
+      return res.json({
+        message: "No banks found for this pincode. Add a new bank for this pincode.",
+      });
     }
-
-    try {
-        const banksSnapshot = await db.collection('pincode_services').get();
-        let matchingBanks = [];
-
-        banksSnapshot.forEach(doc => {
-            const pincodes = doc.data().pincode; // Get the 'pincode' field as a string
-
-            if (pincodes) {
-                // Convert the string into an array of pincodes
-                const pincodeArray = pincodes
-                    .replace(/"/g, '') // Remove all double quotes
-                    .split(',')        // Split by commas
-                    .map(p => p.trim()); // Trim whitespace around each pincode
-
-                // Check if the user's pincode exists in the array
-                if (pincodeArray.includes(userPincode)) {
-                    matchingBanks.push({ bank: doc.id, Logo: doc.data().logo}); // Add the matching document ID to the list
-                }
-            }
-        });
-
-        // Respond with matching banks or a message if no match is found
-        if (matchingBanks.length > 0) {
-            return res.json({ message: 'Banks found', banks: matchingBanks });
-        } else {
-            return res.json({ message: 'No banks found for this pincode. Add a new bank for this pincode.' });
-        }
-    } catch (error) {
-        console.error('Error fetching data from Firestore:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
-}
+  } catch (error) {
+    console.error("Error fetching bank data:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 module.exports = {
     checkPincode,uploadPincodes
