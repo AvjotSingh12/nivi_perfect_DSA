@@ -97,50 +97,127 @@ const uploadPincodes = async (req, res) => {
     console.error("Error processing file:", error);
     res.status(500).json({ message: error.message });
   }
-};
+ };
 
 
-const checkPincode = async (req, res) => {
-  const userPincode = req.query.pincode; // Get the pincode from query parameters
+ const checkPincode = async (req, res) => {
+  const userPincode = req.query.pincode;
 
   if (!userPincode) {
     return res.status(400).json({ error: "Pincode is required" });
   }
 
   try {
-    // Fetch banks that offer pan-India services
-    const panIndiaBanks = await Bank.find({ pan_india_service: true })
-      .select("_id bankNames logoUrl")
-      .lean();
-
-    // Fetch banks that specifically serve the given pincode
-    const pincodeBanks = await Pincode.find({
-      serviceable_pincodes: { $in: [userPincode] },
+    // Fetch all banks that are either pan-India or serve the given pincode
+    const allBanks = await Bank.find({
+      $or: [
+        { pan_india_service: true },
+        { serviceable_pincodes: { $in: [userPincode] } }
+      ]
     })
-      .select("_id bankNames logoUrl")
+      .select("_id bankNames logoUrl products")
       .lean();
 
-    // Merge both lists of banks
-    let matchingBanks = [...panIndiaBanks, ...pincodeBanks];
-
-    // Filter out banks that are missing any required field
-    matchingBanks = matchingBanks.filter(
-      (bank) => bank._id && bank.bankNames && bank.logoUrl
+    // Ensure products exist as a string before checking for "PL"
+    const matchingBanks = allBanks.filter(bank => 
+      typeof bank.products === "string" && bank.products.includes("PL")
     );
 
-    // Respond with matching banks or an appropriate message
-    if (matchingBanks.length > 0) {
-      return res.json({ message: "Banks found", banks: matchingBanks });
-    } else {
-      return res.json({
-        message: "No banks found for this pincode. Add a new bank for this pincode.",
-      });
-    }
+   
+    return res.json({
+      message: matchingBanks.length > 0 ? "Banks found" : "No banks found for this pincode with PL product.",
+      banks: matchingBanks,
+    
+    });
+
   } catch (error) {
     console.error("Error fetching bank data:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
+
+
+
+// const checkPincode = async (req, res) => {
+//   const userPincode = req.query.pincode;
+
+//   if (!userPincode) {
+//     return res.status(400).json({ error: "Pincode is required" });
+//   }
+
+//   try {
+//     // Fetch banks that meet both criteria:
+//     // 1. Either offer pan-India service OR serve the given pincode
+//     // 2. Have "PL" in their products array
+//     const banks = await Bank.find({
+//       $or: [
+//         { pan_india_service: true },
+//         { serviceable_pincodes: { $in: [userPincode] } }
+//       ],
+//       products: "PL" // Ensures the bank offers Personal Loans
+//     })
+//       .select("_id bankNames logoUrl products")
+//       .lean();
+
+//     // Remove duplicate entries based on _id
+//     const uniqueBanks = Array.from(new Map(banks.map(bank => [bank._id.toString(), bank])).values());
+
+//     if (uniqueBanks.length > 0) {
+//       return res.json({ message: "Banks found", banks: uniqueBanks });
+//     } else {
+//       return res.json({
+//         message: "No banks found for this pincode with PL product. Add a new bank for this pincode.",
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error fetching bank data:", error);
+//     return res.status(500).json({ error: "Internal server error" });
+//   }
+// };
+
+
+// const checkPincode = async (req, res) => {
+//   const userPincode = req.query.pincode; // Get the pincode from query parameters
+
+//   if (!userPincode) {
+//     return res.status(400).json({ error: "Pincode is required" });
+//   }
+
+//   try {
+//     // Fetch banks that offer pan-India services
+//     const panIndiaBanks = await Bank.find({ pan_india_service: true })
+//       .select("_id bankNames logoUrl")
+//       .lean();
+
+//     // Fetch banks that specifically serve the given pincode
+//     const pincodeBanks = await Pincode.find({
+//       serviceable_pincodes: { $in: [userPincode] },
+//     })
+//       .select("_id bankNames logoUrl")
+//       .lean();
+
+//     // Merge both lists of banks
+//     let matchingBanks = [...panIndiaBanks, ...pincodeBanks];
+
+//     // Filter out banks that are missing any required field
+//     matchingBanks = matchingBanks.filter(
+//       (bank) => bank._id && bank.bankNames && bank.logoUrl
+//     );
+
+//     // Respond with matching banks or an appropriate message
+//     if (matchingBanks.length > 0) {
+//       return res.json({ message: "Banks found", banks: matchingBanks });
+//     } else {
+//       return res.json({
+//         message: "No banks found for this pincode. Add a new bank for this pincode.",
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error fetching bank data:", error);
+//     return res.status(500).json({ error: "Internal server error" });
+//   }
+// };
 
 module.exports = {
     checkPincode,uploadPincodes
